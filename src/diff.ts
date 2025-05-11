@@ -2,7 +2,7 @@ import { diffWords } from "diff";
 import type { DiffResult } from "./types/diff";
 
 /**
- * Generates ==highlight== for additions. 
+ * Generates <mark>highlight</mark> for additions. 
  * Removed parts are excluded from the output.
  * Unchanged parts are returned as plain text.
  */
@@ -15,27 +15,29 @@ export function annotateDiff(original: string, revised: string): DiffResult {
       if (part.added) {
         additions += 1;
         const value = part.value;
-        const leadingWhitespaceMatch = value.match(/^(\\s*)/);
+        
+        // Split value into leading whitespace, core text, and trailing whitespace
+        const leadingWhitespaceMatch = value.match(/^(\s*)/);
         const leadingWhitespace = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : "";
         
-        const trailingWhitespaceMatch = value.match(/(\\s*)$/);
+        const trailingWhitespaceMatch = value.match(/(\s*)$/);
         const trailingWhitespace = trailingWhitespaceMatch ? trailingWhitespaceMatch[0] : "";
         
         let core = value;
-        // Strip trailing whitespace from core
         if (trailingWhitespace.length > 0) {
             core = core.substring(0, core.length - trailingWhitespace.length);
         }
-        // Strip leading whitespace from core
         if (leadingWhitespace.length > 0) {
             core = core.substring(leadingWhitespace.length);
         }
 
+        // Only wrap non-empty core text with <mark>. Whitespace remains outside.
         if (core.length > 0) {
-          return `${leadingWhitespace}==${core}==${trailingWhitespace}`;
+          return `${leadingWhitespace}<mark>${core}</mark>${trailingWhitespace}`;
         } else {
-          // Value was purely whitespace, highlight all of it
-          return `==${value}==`; 
+          // If the part was purely whitespace and added, highlight it all.
+          // This helps visualize added newlines or multiple spaces.
+          return `<mark>${value}</mark>`; 
         }
       }
       if (part.removed) {
