@@ -107,3 +107,19 @@ textarea.coffee-settings-prompt-textarea {
   box-sizing: border-box;
   /* margin-bottom: 15px; /* Removed from here, moved to container */
 }
+
+/* Styles for TailoredPromptModal Prompt Preview */
+.coffee-tailored-prompt-modal .coffee-tailored-prompt-preview {
+  max-height: 20vh; /* Match other elements in this modal */
+  overflow-y: auto;
+  margin-top: 10px; /* Space below the dropdown */
+  margin-bottom: 15px; /* Space above action buttons */
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background-color: var(--background-secondary-alt); /* Slightly different background */
+  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  word-break: break-word;
+  font-size: var(--font-ui-smaller); /* Slightly smaller font for preview */
+  line-height: var(--line-height-normal);
+}

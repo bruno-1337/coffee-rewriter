@@ -13,6 +13,7 @@ export class TailoredPromptModal extends Modal {
   private customPromptContainer!: HTMLDivElement;
   private chosenPromptTemplate: PromptTemplate | null = null;
   private readonly CUSTOM_PROMPT_ID = "__custom__";
+  private promptPreviewArea!: HTMLDivElement;
 
   constructor(app: App, selectedText: string, plugin: CoffeeRewriter, editor: Editor) {
     super(app);
@@ -27,12 +28,24 @@ export class TailoredPromptModal extends Modal {
     contentEl.addClass("coffee-tailored-prompt-modal");
 
     contentEl.createEl("h2", { text: "Tailored Rewrite" });
-
     contentEl.createEl("p", { text: "Select a prompt template or write your own:" });
 
-    new Setting(contentEl)
-      .setName("Prompt Template")
-      .addDropdown(dd => {
+    // 1. Create the Setting for the dropdown first
+    const dropdownSetting = new Setting(contentEl)
+      .setName("Prompt Template");
+
+    // 2. Create the containers for preview and custom input next
+    // These will be direct children of contentEl, appearing after dropdownSetting.settingEl
+    this.promptPreviewArea = contentEl.createDiv();
+    this.promptPreviewArea.addClass("coffee-tailored-prompt-preview");
+    this.promptPreviewArea.style.display = "none"; 
+
+    this.customPromptContainer = contentEl.createDiv("custom-prompt-container-div");
+    this.customPromptContainer.addClass("coffee-tailored-custom-prompt-container");
+    this.customPromptContainer.style.display = "none";
+
+    // 3. Now add the dropdown to its Setting, and configure its behavior
+    dropdownSetting.addDropdown(dd => {
         this.promptSelect = dd;
         // Add saved prompts
         this.plugin.cfg.promptTemplates.forEach(template => {
@@ -41,31 +54,37 @@ export class TailoredPromptModal extends Modal {
         // Add option for custom prompt
         dd.addOption(this.CUSTOM_PROMPT_ID, "-- Write a new custom prompt --");
 
-        // Set initial value (e.g., first template or custom if no templates)
+        // Determine initial selection
+        let initialSelectionIsCustom = true; // Assume custom if no templates
         if (this.plugin.cfg.promptTemplates.length > 0) {
           dd.setValue(this.plugin.cfg.promptTemplates[0].id);
           this.chosenPromptTemplate = this.plugin.cfg.promptTemplates[0];
-          this.toggleCustomPromptUI(false); // Initially hide custom UI if a template is selected
+          initialSelectionIsCustom = false;
         } else {
           dd.setValue(this.CUSTOM_PROMPT_ID);
-          this.toggleCustomPromptUI(true); // Show custom UI if no templates
+          // this.chosenPromptTemplate remains null
         }
 
+        // Set initial UI state based on the determined selection
+        // this.promptPreviewArea and this.customPromptContainer are now defined
+        this.toggleCustomPromptUI(initialSelectionIsCustom);
+        this.updatePromptPreview(dd.getValue()); 
+
+        // Handle changes to the dropdown
         dd.onChange(value => {
-          if (value === this.CUSTOM_PROMPT_ID) {
+          const isCustom = value === this.CUSTOM_PROMPT_ID;
+          if (isCustom) {
             this.chosenPromptTemplate = null;
-            this.toggleCustomPromptUI(true);
           } else {
             this.chosenPromptTemplate = this.plugin.cfg.promptTemplates.find(t => t.id === value) || null;
-            this.toggleCustomPromptUI(false);
           }
+          this.toggleCustomPromptUI(isCustom);
+          this.updatePromptPreview(value);
         });
       });
     
-    // Container for custom prompt - initially hidden if a template is selected
-    this.customPromptContainer = contentEl.createDiv("custom-prompt-container-div");
-    this.customPromptContainer.addClass("coffee-tailored-custom-prompt-container");
-
+    // 4. Setup Custom Prompt Text Area (inside the customPromptContainer)
+    // This setting is appended to this.customPromptContainer, not contentEl directly here.
     const customPromptSetting = new Setting(this.customPromptContainer)
       .setName("Custom Prompt")
       .setDesc("Enter your custom prompt. The selected text will be appended to this.");
@@ -78,9 +97,7 @@ export class TailoredPromptModal extends Modal {
         textArea.inputEl.addClass("coffee-tailored-prompt-textarea");
       });
 
-    // Initially hide or show custom prompt UI based on dropdown
-    this.toggleCustomPromptUI(this.promptSelect.getValue() === this.CUSTOM_PROMPT_ID);
-
+    // 5. Action Button (appended to contentEl, so appears last)
     new Setting(contentEl)
       .addButton(button => button
         .setButtonText("Rewrite with this prompt")
@@ -101,13 +118,32 @@ export class TailoredPromptModal extends Modal {
       );
   }
 
-  private toggleCustomPromptUI(show: boolean) {
-    if (this.customPromptContainer) { // Check if the element exists
-        if (show) {
+  private toggleCustomPromptUI(showCustom: boolean) {
+    // Ensure containers exist before trying to change their style
+    if (this.customPromptContainer && this.promptPreviewArea) {
+        if (showCustom) {
             this.customPromptContainer.style.display = "block";
+            this.promptPreviewArea.style.display = "none"; 
         } else {
             this.customPromptContainer.style.display = "none";
+            this.promptPreviewArea.style.display = "block"; 
         }
+    }
+  }
+
+  private updatePromptPreview(selectedId: string | null) {
+    if (!this.promptPreviewArea) return; // Guard against null element
+
+    if (selectedId && selectedId !== this.CUSTOM_PROMPT_ID) {
+      const template = this.plugin.cfg.promptTemplates.find(t => t.id === selectedId);
+      if (template) {
+        this.promptPreviewArea.textContent = template.prompt;
+      } else {
+        this.promptPreviewArea.textContent = "Prompt not found."; // Should not happen if IDs are consistent
+      }
+    } else {
+      // Clear content when "custom prompt" is selected or no valid ID
+      this.promptPreviewArea.textContent = ""; 
     }
   }
 
@@ -121,11 +157,8 @@ export class TailoredPromptModal extends Modal {
       return;
     }
 
-    // Extract the text and note from the response
     const rewrittenText = response.rewrittenText;
     const rewriteNote = response.note;
-
-    // Trim the result from LLM before comparison or display
     const trimmedRewrittenText = rewrittenText.trim();
 
     if (trimmedRewrittenText === this.selectedText.trim()) {
@@ -135,10 +168,10 @@ export class TailoredPromptModal extends Modal {
     
     const onAcceptAll = (acceptedText: string) => {
         const currentSelection = this.editor.getSelection();
-        if (currentSelection === this.selectedText) { // Double check if selection is still the same
+        if (currentSelection === this.selectedText) { 
             this.editor.replaceSelection(acceptedText);
         } else {
-            const selObj = this.editor.listSelections()[0]; // Attempt to get current selection loc
+            const selObj = this.editor.listSelections()[0]; 
             if (selObj) {
                  this.editor.replaceRange(acceptedText, selObj.anchor, selObj.head);
             } else {
@@ -149,14 +182,13 @@ export class TailoredPromptModal extends Modal {
         new Notice("☕️ Tailored rewrite accepted!");
     };
 
-    // Open the standard review modal, telling it not to show a diff, but include the note
     new RewriteModal(
       this.app, 
       this.selectedText, 
       trimmedRewrittenText, 
       onAcceptAll, 
-      false, // Don't show diff for tailored rewrites
-      rewriteNote // Include the note from the LLM
+      false, 
+      rewriteNote 
     ).open();
   }
 
