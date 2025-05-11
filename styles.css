@@ -1,0 +1,109 @@
+/* placeholder */
+
+/* Modal Styles */
+.coffee-rewrite-modal .modal-content {
+  padding-bottom: 50px; /* Space for fixed buttons */
+}
+
+/* General container for each text block (Original, Rewritten) */
+.coffee-rewrite-modal .text-container {
+  margin-bottom: 20px; /* Space between Original and Rewritten blocks, and before buttons */
+}
+
+.coffee-rewrite-modal .text-container h4 {
+  margin-bottom: 8px; /* Space between title (Original/Rewritten) and content */
+}
+
+/* Styling for the div that holds the rendered Markdown content */
+.coffee-rewrite-modal .modal-text-content {
+  border: 1px solid var(--background-modifier-border);
+  padding: 10px;
+  border-radius: var(--radius-m);
+  max-height: 40vh; /* Adjust as needed, e.g., 30vh or 40vh per pane */
+  overflow-y: auto;
+  white-space: pre-wrap; /* Ensure wrapping for pre-like behavior if MarkdownRenderer doesn't handle it */
+  word-break: break-word;
+}
+
+/* Styles for the AI note in RewriteModal */
+.coffee-rewrite-modal .note-container {
+  margin-bottom: 1rem;
+}
+
+.coffee-rewrite-modal .note-content {
+  padding: 0.5rem;
+  background-color: var(--background-modifier-form-field);
+  border-radius: var(--radius-m);
+}
+
+.coffee-rewrite-modal .setting-item-control {
+  justify-content: flex-end; /* Align buttons to the right */
+  padding-top: 10px;
+  /* position: fixed; */ /* If we want them at the bottom of the modal view */
+  /* bottom: 10px; */
+  /* right: 10px; */
+  /* background-color: var(--background-primary); */ /* ensure they are above content */
+  /* width: calc(100% - 2*var(--modal-padding)); */ /* Adjust width based on modal padding */
+}
+
+/* Styling for <mark> tags, which MarkdownRenderer creates from ==highlight== */
+/* This will apply to highlights in the "Rewritten" pane */
+.coffee-rewrite-modal .modal-text-content mark {
+  background-color: #ffe65c; /* Your chosen bright yellow */
+  /* color: var(--text-normal); */ /* Ensure text contrast if needed */
+}
+
+/* Styles for TailoredPromptModal */
+.coffee-tailored-prompt-modal .modal-selected-text-display {
+  max-height: 20vh;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-sizing: border-box; /* Ensure consistent height calculation */
+}
+
+.coffee-tailored-prompt-modal .setting-item-name {
+  font-weight: bold; /* For "Prompt:" label */
+}
+
+.coffee-tailored-prompt-modal textarea.setting-input {
+  width: 100%;
+  /* min-height: 20vh; Removed this */
+  max-height: 20vh; /* Cap height to match display box */
+  overflow-y: auto; /* Add scroll for overflow */
+  resize: vertical;
+  margin-bottom: 15px;
+  box-sizing: border-box; /* Ensure consistent height calculation */
+  /* Default padding for textareas is usually 2px, if more is needed it can be added */
+  /* padding: 10px; Potentially add if visual match needs identical inner padding */
+}
+
+/* Styles for Settings Tab */
+.coffee-settings-prompt-container {
+  margin-bottom: var(--setting-item-spacing);
+}
+
+textarea.coffee-settings-prompt-textarea {
+  width: 100%;
+  min-height: 200px; /* Increased min-height */
+  resize: vertical;
+}
+
+/* Container for the prompt input textarea in TailoredPromptModal */
+.coffee-tailored-prompt-modal .coffee-tailored-prompt-input-container {
+  width: 100%;
+  box-sizing: border-box;
+  display: block; /* Ensure it takes full width as a block element */
+  margin-bottom: 15px; /* Add margin here to space it from action buttons */
+}
+
+.coffee-tailored-prompt-modal textarea.setting-input {
+  width: 100%;
+  max-height: 20vh;
+  overflow-y: auto;
+  resize: vertical;
+  box-sizing: border-box;
+  /* margin-bottom: 15px; /* Removed from here, moved to container */
+}

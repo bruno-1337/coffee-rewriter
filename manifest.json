@@ -1,0 +1,11 @@
+{
+	"id": "coffee-rewriter",
+	"name": "Coffee Rewriter",
+	"description": "AI Rewriting for Obsidian.",
+	"version": "1.0.0",
+	"minAppVersion": "1.5.8",
+	"isDesktopOnly": true,
+	"author": "Bruno Badaró",
+	"authorUrl": "https://mullvad.vip/",
+	"helpUrl": "https://github.com/bruno-1337/coffee-rewriter#readme"
+}
