@@ -1,13 +1,18 @@
-import { App, Modal, Setting, TextAreaComponent, MarkdownRenderer, Editor, Notice, Component } from "obsidian";
-import CoffeeRewriter from "./main"; // Assuming main.ts exports CoffeeRewriter plugin class
+import { App, Modal, Setting, TextAreaComponent, MarkdownRenderer, Editor, Notice, Component, DropdownComponent } from "obsidian";
+import CoffeeRewriter from "./main";
 import { requestRewrite } from "./llm/index";
 import { RewriteModal } from "./rewrite-modal";
+import { PromptTemplate } from "./types/settings";
 
 export class TailoredPromptModal extends Modal {
   private selectedText: string;
   private plugin: CoffeeRewriter;
-  private editor: Editor; // Keep editor reference if needed for future complex replacements
+  private editor: Editor; 
   private promptTextArea!: TextAreaComponent;
+  private promptSelect!: DropdownComponent;
+  private customPromptContainer!: HTMLDivElement;
+  private chosenPromptTemplate: PromptTemplate | null = null;
+  private readonly CUSTOM_PROMPT_ID = "__custom__";
 
   constructor(app: App, selectedText: string, plugin: CoffeeRewriter, editor: Editor) {
     super(app);
@@ -21,57 +26,95 @@ export class TailoredPromptModal extends Modal {
     contentEl.empty();
     contentEl.addClass("coffee-tailored-prompt-modal");
 
-    contentEl.createEl("h2", { text: "Tailor Rewrite Prompt" });
+    contentEl.createEl("h2", { text: "Tailored Rewrite" });
 
-    // Display selected text (read-only)
-    contentEl.createEl("h4", { text: "Text to Rewrite:" });
-    const selectedTextContainer = contentEl.createDiv("modal-selected-text-display");
-    MarkdownRenderer.render(this.app, this.selectedText, selectedTextContainer, "", this as unknown as Component);
-    
-    // --- Prompt Input Area ---
-    // Label for the prompt textarea
-    const promptLabelSetting = new Setting(contentEl)
-      .setName("Prompt:")
-      .setDesc("Enter the specific instructions for rewriting the text above. Example: Make this more formal.");
+    contentEl.createEl("p", { text: "Select a prompt template or write your own:" });
 
-    // Create a dedicated container for the TextAreaComponent
-    const promptInputDiv = contentEl.createDiv();
-    promptInputDiv.addClass("coffee-tailored-prompt-input-container"); 
-    promptInputDiv.style.width = "100%"; // Ensure the container div takes full width
-
-    this.promptTextArea = new TextAreaComponent(promptInputDiv) // Add textarea to this new div
-      .setValue("Rewrite this text ")
-      .setPlaceholder("e.g., Make this more concise, or Explain this like I'm five...");
-    
-    const taEl = this.promptTextArea.inputEl;
-    taEl.rows = 6; 
-    taEl.style.width = "100%"; // Ensure the textarea element itself takes full width
-
-    // Action Buttons
     new Setting(contentEl)
-      .addButton((btn) =>
-        btn
-          .setButtonText("Rewrite")
-          .setCta()
-          .onClick(async () => {
-            const customPrompt = this.promptTextArea.getValue();
-            if (!customPrompt.trim()) {
-              new Notice("Please enter a prompt.");
-              return;
-            }
-            this.close(); // Close this modal first
-            await this.handleRewrite(customPrompt);
-          }))
-      .addButton((btn) =>
-        btn.setButtonText("Cancel").onClick(() => {
+      .setName("Prompt Template")
+      .addDropdown(dd => {
+        this.promptSelect = dd;
+        // Add saved prompts
+        this.plugin.cfg.promptTemplates.forEach(template => {
+          dd.addOption(template.id, template.name);
+        });
+        // Add option for custom prompt
+        dd.addOption(this.CUSTOM_PROMPT_ID, "-- Write a new custom prompt --");
+
+        // Set initial value (e.g., first template or custom if no templates)
+        if (this.plugin.cfg.promptTemplates.length > 0) {
+          dd.setValue(this.plugin.cfg.promptTemplates[0].id);
+          this.chosenPromptTemplate = this.plugin.cfg.promptTemplates[0];
+          this.toggleCustomPromptUI(false); // Initially hide custom UI if a template is selected
+        } else {
+          dd.setValue(this.CUSTOM_PROMPT_ID);
+          this.toggleCustomPromptUI(true); // Show custom UI if no templates
+        }
+
+        dd.onChange(value => {
+          if (value === this.CUSTOM_PROMPT_ID) {
+            this.chosenPromptTemplate = null;
+            this.toggleCustomPromptUI(true);
+          } else {
+            this.chosenPromptTemplate = this.plugin.cfg.promptTemplates.find(t => t.id === value) || null;
+            this.toggleCustomPromptUI(false);
+          }
+        });
+      });
+    
+    // Container for custom prompt - initially hidden if a template is selected
+    this.customPromptContainer = contentEl.createDiv("custom-prompt-container-div");
+    this.customPromptContainer.addClass("coffee-tailored-custom-prompt-container");
+
+    const customPromptSetting = new Setting(this.customPromptContainer)
+      .setName("Custom Prompt")
+      .setDesc("Enter your custom prompt. The selected text will be appended to this.");
+    
+    customPromptSetting.addTextArea(textArea => {
+        this.promptTextArea = textArea;
+        textArea.inputEl.rows = 5;
+        textArea.inputEl.cols = 50;
+        textArea.setPlaceholder("Example: Summarize this text for a 5-year-old.");
+        textArea.inputEl.addClass("coffee-tailored-prompt-textarea");
+      });
+
+    // Initially hide or show custom prompt UI based on dropdown
+    this.toggleCustomPromptUI(this.promptSelect.getValue() === this.CUSTOM_PROMPT_ID);
+
+    new Setting(contentEl)
+      .addButton(button => button
+        .setButtonText("Rewrite with this prompt")
+        .setCta()
+        .onClick(() => {
+          let finalPromptText = "";
+          if (this.chosenPromptTemplate) {
+            finalPromptText = this.chosenPromptTemplate.prompt;
+          } else if (this.promptTextArea.getValue().trim()) {
+            finalPromptText = this.promptTextArea.getValue().trim();
+          } else {
+            new Notice("Please select a template or enter a custom prompt.");
+            return;
+          }
           this.close();
-        }));
+          this.handleRewrite(finalPromptText);
+        })
+      );
   }
 
-  private async handleRewrite(customPrompt: string) {
+  private toggleCustomPromptUI(show: boolean) {
+    if (this.customPromptContainer) { // Check if the element exists
+        if (show) {
+            this.customPromptContainer.style.display = "block";
+        } else {
+            this.customPromptContainer.style.display = "none";
+        }
+    }
+  }
+
+  private async handleRewrite(promptToUse: string) {
     new Notice("☕️ Calling LLM with tailored prompt...");
 
-    const response = await requestRewrite(this.plugin.cfg, this.selectedText, customPrompt);
+    const response = await requestRewrite(this.plugin.cfg, this.selectedText, promptToUse);
 
     if (!response) {
       new Notice("Coffee Rewriter: Tailored rewrite request failed or returned empty.");

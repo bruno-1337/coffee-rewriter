@@ -52,7 +52,19 @@ export async function requestRewrite(
   customPrompt?: string // Optional custom prompt
 ): Promise<RewriteResponse | undefined> {
   // Determine which prompt to use
-  const basePrompt = customPrompt !== undefined ? customPrompt : settings.prompt;
+  let basePrompt: string;
+  if (customPrompt !== undefined) {
+    basePrompt = customPrompt;
+  } else {
+    // For Quick Rewrite, use the first template. Fallback if something is wrong with settings.
+    if (settings.promptTemplates && settings.promptTemplates.length > 0 && settings.promptTemplates[0] && typeof settings.promptTemplates[0].prompt === 'string') {
+      basePrompt = settings.promptTemplates[0].prompt;
+    } else {
+      console.warn("Coffee Rewriter: Default prompt template not found or invalid. Using a fallback prompt.");
+      basePrompt = "Improve the following text."; // Basic fallback
+    }
+  }
+  
   // Append JSON instruction to the prompt
   const activePrompt = appendJsonInstruction(basePrompt);
 

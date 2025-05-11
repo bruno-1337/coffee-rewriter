@@ -1,11 +1,12 @@
 import { App, PluginSettingTab, Setting, DropdownComponent, TextComponent, TextAreaComponent, Notice, ButtonComponent } from "obsidian";
 import CoffeeRewriter from "./main";
-import { CoffeeRewriterSettings, LlmProvider } from "./types/settings";
+import { CoffeeRewriterSettings, LlmProvider, PromptTemplate } from "./types/settings";
 import { listOpenAiModels } from "./llm/openai";
 import { listGeminiModels } from "./llm/gemini";
 import { listLmStudioModels } from "./llm/lmstudio";
 import { listClaudeModels } from "./llm/claude";
 import { listOllamaModels } from "./llm/ollama";
+import { PromptEditModal, PromptSaveAction } from "./PromptEditModal";
 
 export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
   provider: "openai",
@@ -15,7 +16,28 @@ export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
   geminiModel: "gemini-pro",
   lmstudioEndpoint: "http://localhost:1234",
   lmStudioModel: "",
-  prompt: "Improve clarity, grammar, and conciseness of the following text. Return only the improved version.",
+  promptTemplates: [
+    {
+      id: "default-quick-rewrite",
+      name: "Quick Rewrite",
+      prompt: "Improve clarity, grammar, and conciseness of the following text."
+    },
+    {
+      id: "pirate-speak",
+      name: "Pirate Speak",
+      prompt: "Rewrite the following text as if you were a swashbuckling pirate, arrr! Keep the core meaning but infuse it with pirate slang and bravado."
+    },
+    {
+      id: "professional-tone",
+      name: "Professional Tone",
+      prompt: "Please rewrite the following text in a more professional and formal tone. Ensure clarity, conciseness, and appropriate business language. Avoid jargon where possible, or explain it if necessary."
+    },
+    {
+      id: "academic-phd-style",
+      name: "Academic (PhD Style)",
+      prompt: "Please revise the following text to reflect the style, depth, and rigor of a PhD-level academic paper. Focus on sophisticated vocabulary, nuanced argumentation, formal scholarly tone, and logical precision."
+    }
+  ],
   preserveQuotes: false,
   stripReasoning: false,
   claudeKey: "",
@@ -26,10 +48,15 @@ export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
 
 export class CoffeeRewriterSettingTab extends PluginSettingTab {
   private plugin: CoffeeRewriter;
+  private selectedTemplateIdForEditing: string | null = null;
+  private promptTemplateSettingsContainer!: HTMLDivElement;
 
   constructor(app: App, plugin: CoffeeRewriter) {
     super(app, plugin);
     this.plugin = plugin;
+    if (this.plugin.cfg.promptTemplates && this.plugin.cfg.promptTemplates.length > 0) {
+      this.selectedTemplateIdForEditing = this.plugin.cfg.promptTemplates[0].id;
+    }
   }
 
   private addTextSetting(
@@ -68,12 +95,11 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     let currentRefreshButtonComponent: ButtonComponent | null = null;
 
     const performModelLoadAndUpdateUI = async (isRefresh: boolean) => {
-      if (!currentDropdownComponent) return; // Dropdown must exist
+      if (!currentDropdownComponent) return;
 
-      // Prerequisite check
       let prerequisitePresent = false;
-      let prerequisiteName = "API Key"; // Default
-      let prerequisiteSettingField = ""; // For the message, e.g., "OpenAI API Key"
+      let prerequisiteName = "API Key";
+      let prerequisiteSettingField = "";
       
       switch (provider) {
         case "openai":
@@ -124,7 +150,6 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
         return;
       }
 
-      // Prerequisites are met, proceed to load
       currentDropdownComponent.selectEl.disabled = true;
       if (currentRefreshButtonComponent) currentRefreshButtonComponent.setDisabled(true);
       settingControl.setDesc(description + (isRefresh ? " (Refreshing models...)" : " (Loading models...)"));
@@ -146,11 +171,11 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
         console.error(`Coffee Rewriter - Error loading models for ${provider}:`, error);
       }
 
-      settingControl.setDesc(description); // Restore original description
+      settingControl.setDesc(description);
       currentDropdownComponent.selectEl.disabled = false;
       if (currentRefreshButtonComponent) currentRefreshButtonComponent.setDisabled(false);
 
-      currentDropdownComponent.selectEl.options.length = 0; // Clear before populating
+      currentDropdownComponent.selectEl.options.length = 0;
       if (models.length === 0) {
         currentDropdownComponent.addOption("", "--No models found or loaded--");
       } else {
@@ -159,12 +184,11 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
           if (currentDropdownComponent) currentDropdownComponent.addOption(modelName, modelName);
         });
       }
-      currentDropdownComponent.setValue(get()); // Re-set current value
+      currentDropdownComponent.setValue(get());
     };
 
     settingControl.addDropdown(async (dd: DropdownComponent) => {
       currentDropdownComponent = dd;
-      // Initial placeholder, will be overwritten by performModelLoadAndUpdateUI
       dd.selectEl.options.length = 0;
       dd.addOption("", "--Select Model--");
       dd.setValue(get()); 
@@ -172,34 +196,159 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
       dd.onChange(async (val) => {
         set(val);
         await this.plugin.saveSettings();
-        // If provider or API key changes, display() is called, which re-creates this setting.
-        // If only model selection changes, no reload of the list itself is needed here.
       });
 
-      // Defer initial load slightly to ensure refresh button can be captured if performModelLoadAndUpdateUI needs it.
-      // Or ensure that currentRefreshButtonComponent can be null initially.
-      // The current logic inside performModelLoadAndUpdateUI handles if currentRefreshButtonComponent is null.
       await performModelLoadAndUpdateUI(false); 
     });
 
     settingControl.addButton(button => {
       currentRefreshButtonComponent = button;
       button
-        .setIcon("refresh-cw") // Obsidian icon for refresh
+        .setIcon("refresh-cw")
         .setTooltip("Refresh model list")
         .onClick(async () => {
-          await performModelLoadAndUpdateUI(true); // Pass true for isRefresh
+          await performModelLoadAndUpdateUI(true);
         });
-      // Initial state of the button (enabled/disabled) will be set by the first call 
-      // to performModelLoadAndUpdateUI, which is called after dropdown setup.
     });
+  }
+
+  private renderPromptTemplateEditor() {
+    this.promptTemplateSettingsContainer.empty();
+
+    if (!this.plugin.cfg.promptTemplates || this.plugin.cfg.promptTemplates.length === 0) {
+      this.plugin.cfg.promptTemplates = DEFAULT_SETTINGS.promptTemplates.map(pt => ({...pt})); 
+      this.plugin.saveSettings(); 
+      this.selectedTemplateIdForEditing = this.plugin.cfg.promptTemplates.length > 0 ? this.plugin.cfg.promptTemplates[0].id : null;
+    }
+    if (!this.selectedTemplateIdForEditing && this.plugin.cfg.promptTemplates.length > 0) {
+        this.selectedTemplateIdForEditing = this.plugin.cfg.promptTemplates[0].id;
+    } else if (this.plugin.cfg.promptTemplates.length === 0) {
+        this.selectedTemplateIdForEditing = null;
+    }
+
+    const templateManagementSetting = new Setting(this.promptTemplateSettingsContainer)
+      .setName("Manage Templates"); 
+
+    templateManagementSetting.addButton(button => button
+      .setIcon("plus")
+      .setTooltip("Add new prompt template")
+      .setCta()
+      .onClick(() => {
+        new PromptEditModal(this.app, this.plugin, null, this.handlePromptSaveAction.bind(this)).open();
+      }));
+
+    templateManagementSetting.addDropdown(dropdown => {
+      if (this.plugin.cfg.promptTemplates.length === 0) {
+        dropdown.addOption("__none__", "-- No templates defined --");
+        dropdown.setDisabled(true);
+      } else {
+        this.plugin.cfg.promptTemplates.forEach(template => {
+          dropdown.addOption(template.id, template.name);
+        });
+      }
+      if (this.selectedTemplateIdForEditing) {
+        dropdown.setValue(this.selectedTemplateIdForEditing);
+      } else if (this.plugin.cfg.promptTemplates.length > 0) {
+        dropdown.setValue(this.plugin.cfg.promptTemplates[0].id);
+        this.selectedTemplateIdForEditing = this.plugin.cfg.promptTemplates[0].id;
+      }
+      dropdown.onChange(async (value) => {
+        this.selectedTemplateIdForEditing = value;
+        this.renderPromptTemplateEditor(); 
+      });
+    });
+
+    templateManagementSetting.addButton(button => button
+      .setIcon("pencil")
+      .setTooltip("Edit selected prompt template")
+      .onClick(() => {
+        const templateToEdit = this.plugin.cfg.promptTemplates.find(t => t.id === this.selectedTemplateIdForEditing);
+        if (templateToEdit) {
+          new PromptEditModal(this.app, this.plugin, templateToEdit, this.handlePromptSaveAction.bind(this)).open();
+        } else {
+          new Notice("No template selected to edit. Please add one first if the list is empty.");
+        }
+      }));
+
+    const selectedTemplateObject = this.plugin.cfg.promptTemplates.find(t => t.id === this.selectedTemplateIdForEditing);
+    const isQuickRewriteSelected = selectedTemplateObject ? this.plugin.cfg.promptTemplates.indexOf(selectedTemplateObject) === 0 : false;
+
+    if (selectedTemplateObject && !isQuickRewriteSelected) {
+      templateManagementSetting.addButton(button => button
+        .setIcon("trash")
+        .setTooltip("Delete selected prompt template")
+        .setWarning()
+        .onClick(async () => {
+          const indexToRemove = this.plugin.cfg.promptTemplates.findIndex(t => t.id === this.selectedTemplateIdForEditing);
+          if (indexToRemove > 0) { 
+            this.plugin.cfg.promptTemplates.splice(indexToRemove, 1);
+            this.selectedTemplateIdForEditing = this.plugin.cfg.promptTemplates[0].id;
+            await this.plugin.saveSettings();
+            this.renderPromptTemplateEditor(); 
+          } else {
+            new Notice("Cannot delete this template."); 
+          }
+        }));
+    }
+
+    if (selectedTemplateObject) {
+      new Setting(this.promptTemplateSettingsContainer)
+        .setName("Selected Prompt Content")
+        .setDesc("Content of the template selected above. Click the pencil icon to edit.");
+
+      const contentDisplayBox = this.promptTemplateSettingsContainer.createDiv({
+        cls: "coffee-prompt-display-box",
+      });
+      contentDisplayBox.setText(selectedTemplateObject.prompt);
+      
+      contentDisplayBox.style.width = "100%";
+      contentDisplayBox.style.padding = "var(--size-2-3)";
+      contentDisplayBox.style.border = "1px solid var(--background-modifier-border)";
+      contentDisplayBox.style.borderRadius = "var(--radius-m)";
+      contentDisplayBox.style.backgroundColor = "var(--background-secondary)";
+      contentDisplayBox.style.whiteSpace = "pre-wrap";
+      contentDisplayBox.style.wordBreak = "break-word";
+      contentDisplayBox.style.maxHeight = "150px";
+      contentDisplayBox.style.overflowY = "auto";
+      contentDisplayBox.style.marginTop = "var(--size-2-2)";
+      contentDisplayBox.style.marginBottom = "var(--size-4-4)";
+
+    } else if (this.plugin.cfg.promptTemplates.length > 0 && this.selectedTemplateIdForEditing) {
+      new Setting(this.promptTemplateSettingsContainer)
+          .setName("Error")
+          .setDesc("Could not display selected prompt. Please try selecting again.");
+    }
+  }
+
+  private async handlePromptSaveAction(result: PromptSaveAction) {
+    let refreshNeeded = false;
+    let newSelectedId = this.selectedTemplateIdForEditing;
+
+    if (result.action === 'save') {
+      const { template: savedTemplate } = result;
+      const existingIndex = this.plugin.cfg.promptTemplates.findIndex(t => t.id === savedTemplate.id);
+
+      if (existingIndex > -1) { 
+        this.plugin.cfg.promptTemplates[existingIndex] = savedTemplate;
+      } else { 
+        this.plugin.cfg.promptTemplates.push(savedTemplate);
+        newSelectedId = savedTemplate.id; 
+      }
+      refreshNeeded = true;
+    }
+
+    if (refreshNeeded) {
+      this.selectedTemplateIdForEditing = newSelectedId;
+      await this.plugin.saveSettings();
+      this.renderPromptTemplateEditor(); 
+    }
   }
 
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
 
-    /* Provider dropdown */
+    containerEl.createEl("h3", { text: "LLM Provider Settings" });
     new Setting(containerEl)
       .setName("LLM Provider")
       .setDesc("Choose which backend to use for rewriting.")
@@ -213,11 +362,10 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
           .onChange(async (val: string) => {
             this.plugin.cfg.provider = val as LlmProvider;
             await this.plugin.saveSettings();
-            this.display();
+            this.display(); 
           });
       });
 
-    /* Provider-specific settings */
     const p = this.plugin.cfg.provider;
     if (p === "openai") {
       this.addTextSetting(containerEl, "API Key", "Your OpenAI secret key.", () => this.plugin.cfg.openAiKey, (v) => (this.plugin.cfg.openAiKey = v), true);
@@ -236,26 +384,11 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
       this.addModelDropdownSetting(containerEl, "Model", "Ollama model (requires server to be running).", "ollama", () => this.plugin.cfg.ollamaModel, (v) => (this.plugin.cfg.ollamaModel = v));
     }
 
-    /* Prompt - Label and Description */
-    new Setting(containerEl)
-      .setName("Quick Rewrite Prompt")
-      .setDesc("System instruction that precedes the user text. This will be sent to the LLM before your selected text.");
+    containerEl.createEl("h3", { text: "Prompts" }); 
+    this.promptTemplateSettingsContainer = containerEl.createDiv("prompt-templates-settings-area");
+    this.renderPromptTemplateEditor(); 
 
-    /* Prompt - TextArea */
-    // Create a container for the textarea to allow full width and custom styling
-    const promptTextAreaContainer = containerEl.createDiv("prompt-textarea-container coffee-settings-prompt-container");
-    const promptTextArea = new TextAreaComponent(promptTextAreaContainer)
-      .setValue(this.plugin.cfg.prompt)
-      .onChange(async (val) => {
-        this.plugin.cfg.prompt = val;
-        await this.plugin.saveSettings();
-      });
-
-    // Apply styles for a larger, full-width textarea
-    promptTextArea.inputEl.rows = 10; // Increased rows
-    promptTextArea.inputEl.addClass("coffee-settings-prompt-textarea");
-
-    /* Toggles */
+    containerEl.createEl("h3", { text: "Other Settings" });
     new Setting(containerEl)
       .setName("Preserve text inside quotes")
       .setDesc("Do not rewrite text that is wrapped in \"double quotes\".")

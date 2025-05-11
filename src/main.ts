@@ -38,7 +38,7 @@ export default class CoffeeRewriter extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu: Menu, editor: Editor) => {
 				menu.addItem((item: MenuItem) => {
-					item.setTitle("Quick Rewrite (selection)").setIcon("bot").onClick(() => rewriteScope(this, editor));
+					item.setTitle("Quick Rewrite (Paragraph / Selection)").setIcon("bot").onClick(() => rewriteScope(this, editor));
 				});
 
 				menu.addItem((item: MenuItem) => {
