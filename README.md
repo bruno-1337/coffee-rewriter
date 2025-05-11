@@ -9,18 +9,20 @@
   <h3>Unleash AI-Powered Writing Enhancement for Your Obsidian Notes</h3>
 </div>
 
-## 🚀 Write Like Never Before
+**Coffee Rewriter** transforms your Obsidian writing experience by embedding cutting-edge AI directly into your workflow. Connect to **OpenAI, Claude, Gemini, or run local models via LM Studio or Ollama** to refine, enhance, and perfect your text without ever leaving your vault.
 
-**Coffee Rewriter** transforms your Obsidian writing experience by embedding cutting-edge AI directly into your workflow. Connect to **OpenAI, Claude, Gemini, or run local models** to refine, enhance, and perfect your text without ever leaving your vault.
+## ✨ Core Features
 
-## ⚡ Core Features
+| Feature                    | Description                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Versatile LLM Support**  | Connect to OpenAI, Gemini, Claude, or self-hosted models via LM Studio & Ollama.                             |
+| **Quick Rewrite**          | Instantly improve selected text or the current paragraph using your default "Quick Rewrite" prompt.        |
+| **Tailored Rewrite**       | Apply specific instructions by choosing from saved prompt templates or writing a custom prompt on the fly. |
+| **Prompt Management**      | Create, edit, and manage a library of your favorite prompt templates in the plugin settings.               |
+| **Interactive Review**     | Review AI suggestions with highlighted changes (diff view) before accepting.                               |
+| **AI-Generated Notes**     | Get brief notes from the AI explaining what changes were made during the rewrite.                          |
+| **Context Preservation**   | Option to preserve text within "double quotes" from being rewritten.                                     |
 
-| Feature | Description |
-|---------|-------------|
-| **Quick Rewrite** | Select text → right-click → transform instantly |
-| **Tailored Prompts** | Custom instructions ("make academic," "simplify," "fix grammar") |
-| **Multi-Provider** | Use any LLM: OpenAI, Claude, Gemini, LM Studio, Ollama |
-| **Context-aware** | Rewrites respect and preserve your quoted text |
 
 ## 🔌 Supported LLM Providers
 
@@ -34,51 +36,104 @@
     <tr>
       <td align="center"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/lmstudio.svg" width="60" alt="LM Studio Logo"/><br>LM Studio</td>
       <td align="center"><img src="https://unpkg.com/@lobehub/icons-static-svg@latest/icons/ollama.svg" width="60" alt="Ollama Logo"/><br>Ollama</td>
-      <td align="center">More coming soon...</td>
+      <td align="center"><em>(More providers soon)</em></td>
     </tr>
   </table>
 </div>
 
-## 🔧 Installation & Setup
+## 🚀 Getting Started
 
-1. **Install**:
-   - Community plugins browser in Obsidian
-   - OR manually place in `.obsidian/plugins/`
+### Installation
 
-2. **Configure**:
-   ```
-   Settings → Coffee Rewriter → Select provider → Enter API key
-   ```
+1.  **Obsidian Community Plugins**:
+    *   Go to `Settings` → `Community plugins` → `Browse`.
+    *   Search for "Coffee Rewriter" and click `Install`, then `Enable`.
+2.  **Manual Installation**:
+    *   Download the latest release from the [GitHub Releases page](https://github.com/bruno-1337/coffee-rewriter/releases).
+    *   Extract the downloaded archive.
+    *   Copy the `coffee-rewriter` folder into your Obsidian vault's `.obsidian/plugins/` directory.
+    *   Reload Obsidian (or disable and re-enable the plugin if it was already present).
+    *   Enable the plugin in `Settings` → `Community plugins`.
 
-3. **Use**:
-   - Select text (or place cursor on paragraph)
-   - Right-click → "Quick Rewrite" (or Command Palette)
-   - OR use "Tailored rewrite" for custom instructions
-   - Review changes → Accept or Cancel
+### Configuration
+
+1.  **Open Plugin Settings**:
+    *   Navigate to `Settings` → `Community Plugins` → `Coffee Rewriter` (click the gear icon).
+
+2.  **LLM Provider Settings**:
+    *   **Choose your LLM Provider**: Select from OpenAI, Gemini, Claude, LM Studio, or Ollama.
+    *   **API Key/Server URL**:
+        *   For cloud services (OpenAI, Gemini, Claude), enter your API key.
+        *   For local services (LM Studio, Ollama), enter the server URL (e.g., `http://localhost:1234`).
+    *   **Model Selection**: Choose your preferred model from the dropdown. You can refresh the model list using the refresh button. (Ensure your API key/URL is set before loading models).
+
+3.  **Prompts**:
+    *   This section allows you to manage your prompt templates.
+    *   The **"Quick Rewrite"** template (the first in the list) is used by the "Quick Rewrite" command and context menu action.
+    *   **Manage Templates**:
+        *   Use the `+` button to add a new prompt template.
+        *   Select a template from the dropdown to view its content.
+        *   Use the pencil icon (Edit) to modify the selected template's name and prompt in a modal.
+        *   Use the trash icon (Delete) to remove custom templates (the "Quick Rewrite" template cannot be deleted).
+
+4.  **Other Settings**:
+    *   **Preserve text inside quotes**: Toggle whether to protect text within "double quotes" from being rewritten.
+    *   **Strip <think> reasoning (local models)**: Useful for self-hosted models that might output reasoning or thought processes within `<think>...</think>` tags.
+
+## 💡 How to Use
+
+Coffee Rewriter currently offers two main ways to enhance your text:
+
+1.  **Quick Rewrite**:
+    *   **Action**: Select text in your editor, or simply place your cursor on a paragraph you want to rewrite.
+    *   **Trigger**:
+        *   Right-click on the selection/paragraph and choose "Quick Rewrite".
+        *   Or, open the Command Palette (Ctrl/Cmd+P) and search for "Coffee Rewriter: Quick Rewrite (Paragraph / Selection)".
+    *   **Process**: The plugin will use your "Quick Rewrite" prompt template to improve the text.
+    *   **Review**: A modal will appear showing the original text and the rewritten text with changes highlighted. You'll also see any "Note from the AI" explaining the changes. Click "Accept" to apply or "Cancel".
+
+2.  **Tailored Rewrite**:
+    *   **Action**: Select the text you want to rewrite.
+    *   **Trigger**:
+        *   Right-click on the selection and choose "Tailored rewrite".
+        *   Or, open the Command Palette (Ctrl/Cmd+P) and search for "Coffee Rewriter: Tailored rewrite".
+    *   **Process**: A modal will appear allowing you to:
+        *   Choose from your list of saved prompt templates. The content of the selected template will be previewed.
+        *   Or, select "-- Write a new custom prompt --" to enter your own instructions directly in a text area.
+    *   **Review**: After submitting, the standard "Review Rewrite" modal will appear with the AI's suggestions and notes.
+
+<!-- 
+## 📸 Screenshots (Coming Soon)
+
+*   Placeholder for Settings Panel Screenshot
+*   Placeholder for Tailored Rewrite Modal Screenshot
+*   Placeholder for Review Rewrite Modal Screenshot 
+-->
 
 ## 🛠️ Developer Quick Start
 
 ```bash
-# Clone repo
+# Clone the repository
 git clone https://github.com/bruno-1337/coffee-rewriter.git
-
-# Install dependencies with Bun
 cd coffee-rewriter
+
+# Install dependencies (requires Bun)
 bun install
 
-# Build
+# Build the plugin
 bun run build
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions! To get started:
+Contributions, issues, and feature requests are welcome! Please feel free to:
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin amazing-feature`
-5. Open a Pull Request
+Please check the existing issues before creating a new one.
 
 ## 📜 License
 
