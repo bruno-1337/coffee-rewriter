@@ -1,8 +1,8 @@
 {
 	"id": "coffee-rewriter",
 	"name": "Coffee Rewriter",
-	"description": "AI Rewriting for Obsidian.",
-	"version": "1.0.0",
+	"description": "Easy AI Rewriting for everyone.",
+	"version": "1.0.2",
 	"minAppVersion": "1.5.8",
 	"isDesktopOnly": true,
 	"author": "Bruno Badaró",

@@ -178,10 +178,14 @@ export class TailoredPromptModal extends Modal {
       return;
     }
     
+    // Capture the text that was actually the input for *this* rewrite cycle
+    const textActuallyRewritten = this.textToRewrite;
+    
     const onAcceptAll = (acceptedText: string) => {
         // Check if there's a selection to replace
         const currentSelection = this.editor.getSelection();
-        if (currentSelection && currentSelection === this.selectedText) { 
+        // Compare against the text that was actually rewritten in this cycle
+        if (currentSelection && currentSelection === textActuallyRewritten) { 
             // Direct selection replacement is reliable
             this.editor.replaceSelection(acceptedText);
         } else {
@@ -189,7 +193,8 @@ export class TailoredPromptModal extends Modal {
             const currentLine = this.editor.getCursor().line;
             const currentLineText = this.editor.getLine(currentLine);
             
-            if (currentLineText === this.selectedText) {
+            // Compare against the text that was actually rewritten in this cycle
+            if (currentLineText === textActuallyRewritten) {
                 // Replace the entire line if it matches
                 this.editor.replaceRange(acceptedText, 
                     { line: currentLine, ch: 0 }, 
@@ -197,12 +202,14 @@ export class TailoredPromptModal extends Modal {
             } else {
                 // Try to find the text in the document
                 const docText = this.editor.getValue();
-                const startPos = docText.indexOf(this.selectedText);
+                // Search for the text that was actually rewritten in this cycle
+                const startPos = docText.indexOf(textActuallyRewritten);
                 
                 if (startPos >= 0) {
                     // Convert string position to editor position
                     const startCoords = this.editor.offsetToPos(startPos);
-                    const endCoords = this.editor.offsetToPos(startPos + this.selectedText.length);
+                    // Use the length of the text that was actually rewritten
+                    const endCoords = this.editor.offsetToPos(startPos + textActuallyRewritten.length);
                     this.editor.replaceRange(acceptedText, startCoords, endCoords);
                 } else {
                     // Fallback to using the selection object if available
@@ -221,7 +228,7 @@ export class TailoredPromptModal extends Modal {
 
     new RewriteModal(
       this.app,
-      this.selectedText,
+      textActuallyRewritten, // Pass the correct original text for comparison in the modal
       trimmedRewrittenText,
       onAcceptAll,
       false, // Don't show diff by default for tailored rewrites
