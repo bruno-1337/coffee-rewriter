@@ -32,9 +32,10 @@ If you choose quick rewrite, it will use the prompt found in the plugin settings
 ![image](https://github.com/user-attachments/assets/05fa6287-20b2-439a-a015-63495579b796)
 
 
-Approve your rewrite
+Approve your rewrite or improve it!
 
-![image](https://github.com/user-attachments/assets/18dca2f4-1a4a-4897-a525-1b65e938aec8)
+![image](https://github.com/user-attachments/assets/a6e909b7-c664-4517-917a-41d0f5d46b3f)
+
 
 
 
