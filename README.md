@@ -21,7 +21,21 @@
 | **Prompt Management**      | Create, edit, and manage a library of your favorite prompt templates in the plugin settings.               |
 | **Interactive Review**     | Review AI suggestions with highlighted changes (diff view) before accepting.                               |
 | **AI-Generated Notes**     | Get brief notes from the AI explaining what changes were made during the rewrite.                          |
-| **Context Preservation**   | Option to preserve text within "double quotes" from being rewritten.                                     |
+
+Right click a paragraph or selection and choose your flavour (Quick rewrite or Tailored rewrite)
+
+![image](https://github.com/user-attachments/assets/d99445bf-2cde-49eb-a3a3-2ff87a12bf9b)
+
+
+If you choose quick rewrite, it will use the prompt found in the plugin settings. For tailored rewrite, select the style of rewrite you want (or select custom prompt)
+
+![image](https://github.com/user-attachments/assets/05fa6287-20b2-439a-a015-63495579b796)
+
+
+Approve your rewrite
+
+![image](https://github.com/user-attachments/assets/18dca2f4-1a4a-4897-a525-1b65e938aec8)
+
 
 
 ## 🔌 Supported LLM Providers
