@@ -8,6 +8,7 @@ export class RewriteModal extends Modal {
   private rewriteNote: string | undefined; // Optional note about the rewrite
   private onAcceptAll: (rewrittenText: string) => void;
   private showDiff: boolean;
+  private onRetry: (() => void) | undefined;
 
   constructor(
     app: App, 
@@ -15,7 +16,8 @@ export class RewriteModal extends Modal {
     rewrittenText: string, 
     onAcceptAll: (rewrittenText: string) => void, 
     showDiff: boolean = true, // Default to true for existing Quick Rewrite
-    rewriteNote?: string // Optional note about the rewrite
+    rewriteNote?: string, // Optional note about the rewrite
+    onRetry?: () => void
   ) {
     super(app);
     this.originalText = originalText;
@@ -23,6 +25,7 @@ export class RewriteModal extends Modal {
     this.rewriteNote = rewriteNote;
     this.onAcceptAll = onAcceptAll;
     this.showDiff = showDiff;
+    this.onRetry = onRetry;
   }
 
   override onOpen() {
@@ -63,17 +66,28 @@ export class RewriteModal extends Modal {
     }
 
     // --- Action Buttons ---
-    new Setting(contentEl)
-      .addButton((btn) =>
+    const actionSetting = new Setting(contentEl)
+      .addButton(btn =>
         btn
           .setButtonText("Accept")
           .setCta()
           .onClick(() => {
-            this.onAcceptAll(this.rewrittenText); // Pass the clean rewritten text
+            this.onAcceptAll(this.rewrittenText);
             this.close();
-          }))
-      .addButton((btn) =>
-        btn.setButtonText("Cancel").onClick(() => {
+          }));
+    if (this.onRetry) {
+      actionSetting.addButton(btn =>
+        btn
+          .setButtonText("Try again with a different prompt")
+          .onClick(() => {
+            this.close();
+            this.onRetry!();
+          }));
+    }
+    actionSetting.addButton(btn =>
+      btn
+        .setButtonText("Cancel")
+        .onClick(() => {
           this.close();
         }));
     

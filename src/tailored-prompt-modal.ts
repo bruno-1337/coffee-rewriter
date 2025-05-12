@@ -3,6 +3,7 @@ import CoffeeRewriter from "./main";
 import { requestRewrite } from "./llm/index";
 import { RewriteModal } from "./rewrite-modal";
 import { PromptTemplate } from "./types/settings";
+import { ChooseTextModal } from "./choose-text-modal";
 
 export class TailoredPromptModal extends Modal {
   private selectedText: string;
@@ -194,12 +195,22 @@ export class TailoredPromptModal extends Modal {
     };
 
     new RewriteModal(
-      this.app, 
-      this.selectedText, 
-      trimmedRewrittenText, 
-      onAcceptAll, 
-      false, 
-      rewriteNote 
+      this.app,
+      this.selectedText,
+      trimmedRewrittenText,
+      onAcceptAll,
+      false,
+      rewriteNote,
+      () => {
+        new ChooseTextModal(
+          this.app,
+          this.selectedText,
+          trimmedRewrittenText,
+          (selectedText: string) => {
+            new TailoredPromptModal(this.app, selectedText, this.plugin, this.editor).open();
+          }
+        ).open();
+      }
     ).open();
   }
 

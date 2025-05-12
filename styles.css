@@ -123,3 +123,20 @@ textarea.coffee-settings-prompt-textarea {
   font-size: var(--font-ui-smaller); /* Slightly smaller font for preview */
   line-height: var(--line-height-normal);
 }
+
+/* Styles for ChooseTextModal */
+.coffee-choose-text-modal .text-container {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.coffee-choose-text-modal .text-container.selected {
+  border-color: var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
+}
+.coffee-choose-text-modal .setting-item-control {
+  justify-content: flex-end;
+  padding-top: 10px;
+}
