@@ -179,16 +179,41 @@ export class TailoredPromptModal extends Modal {
     }
     
     const onAcceptAll = (acceptedText: string) => {
+        // Check if there's a selection to replace
         const currentSelection = this.editor.getSelection();
-        if (currentSelection === this.selectedText) { 
+        if (currentSelection && currentSelection === this.selectedText) { 
+            // Direct selection replacement is reliable
             this.editor.replaceSelection(acceptedText);
         } else {
-            const selObj = this.editor.listSelections()[0]; 
-            if (selObj) {
-                 this.editor.replaceRange(acceptedText, selObj.anchor, selObj.head);
+            // Search for the exact text in the document to replace it at its location
+            const currentLine = this.editor.getCursor().line;
+            const currentLineText = this.editor.getLine(currentLine);
+            
+            if (currentLineText === this.selectedText) {
+                // Replace the entire line if it matches
+                this.editor.replaceRange(acceptedText, 
+                    { line: currentLine, ch: 0 }, 
+                    { line: currentLine, ch: currentLineText.length });
             } else {
-                new Notice("Could not apply rewrite: editor selection changed.");
-                return;
+                // Try to find the text in the document
+                const docText = this.editor.getValue();
+                const startPos = docText.indexOf(this.selectedText);
+                
+                if (startPos >= 0) {
+                    // Convert string position to editor position
+                    const startCoords = this.editor.offsetToPos(startPos);
+                    const endCoords = this.editor.offsetToPos(startPos + this.selectedText.length);
+                    this.editor.replaceRange(acceptedText, startCoords, endCoords);
+                } else {
+                    // Fallback to using the selection object if available
+                    const selObj = this.editor.listSelections()[0];
+                    if (selObj) {
+                        this.editor.replaceRange(acceptedText, selObj.anchor, selObj.head);
+                    } else {
+                        new Notice("Could not locate the original text to replace.");
+                        return;
+                    }
+                }
             }
         }
         new Notice("☕️ Tailored rewrite accepted!");

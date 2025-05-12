@@ -53,11 +53,36 @@ export async function rewriteScope(plugin: CoffeeRewriter, editor: Editor): Prom
   }
 
   const onAcceptAll = (acceptedText: string) => {
-    if (isSel) {
+    // Case 1: There was a selection - directly replace it
+    if (isSel && editor.getSelection() === originalText) {
       editor.replaceSelection(acceptedText);
-    } else if (originalLineText !== null) {
-      // Replace the original line content precisely
-      editor.replaceRange(acceptedText, { line: originalLine, ch: 0 }, { line: originalLine, ch: originalLineText.length });
+    } 
+    // Case 2: The original text is exactly one line
+    else if (originalLineText !== null && originalLineText === originalText) {
+      // Replace the entire line content
+      editor.replaceRange(acceptedText, 
+        { line: originalLine, ch: 0 }, 
+        { line: originalLine, ch: originalLineText.length });
+    }
+    // Case 3: Find the exact text in the document
+    else {
+      // Try to find the text in the document
+      const docText = editor.getValue();
+      const startPos = docText.indexOf(originalText);
+      
+      if (startPos >= 0) {
+        // Convert string position to editor position
+        const startCoords = editor.offsetToPos(startPos);
+        const endCoords = editor.offsetToPos(startPos + originalText.length);
+        editor.replaceRange(acceptedText, startCoords, endCoords);
+      } 
+      // Case 4: Fallback - use cursor position and line replacement
+      else if (originalLineText !== null) {
+        // Replace the entire line as fallback
+        editor.replaceRange(acceptedText, 
+          { line: originalLine, ch: 0 }, 
+          { line: originalLine, ch: originalLineText.length });
+      }
     }
     showNotice("☕️ Rewrite accepted!");
   };
