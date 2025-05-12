@@ -149,6 +149,11 @@ Contributions, issues, and feature requests are welcome! Please feel free to:
 
 Please check the existing issues before creating a new one.
 
+## Inspired by:
+[Caipirinha rewriter](https://github.com/bruno-1337/Caipirinha-Rewriter)
+
+[Notion AI](https://www.notion.com/product/ai)
+
 ## 📜 License
 
 Licensed under MIT. See [LICENSE](LICENSE) for details.
