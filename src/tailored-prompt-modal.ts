@@ -199,7 +199,7 @@ export class TailoredPromptModal extends Modal {
       this.selectedText,
       trimmedRewrittenText,
       onAcceptAll,
-      false,
+      false, // Don't show diff by default for tailored rewrites
       rewriteNote,
       () => {
         new ChooseTextModal(

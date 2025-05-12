@@ -1,4 +1,4 @@
-import { App, MarkdownRenderer, Modal, Setting, Component } from "obsidian";
+import { App, MarkdownRenderer, Modal, Setting, Component, ToggleComponent } from "obsidian";
 import { annotateDiff } from "./diff"; // Import annotateDiff
 import { DiffResult } from "./types/diff"; // Import DiffResult type
 
@@ -9,13 +9,14 @@ export class RewriteModal extends Modal {
   private onAcceptAll: (rewrittenText: string) => void;
   private showDiff: boolean;
   private onRetry: (() => void) | undefined;
+  private rewrittenContentDiv!: HTMLDivElement;
 
   constructor(
     app: App, 
     originalText: string, 
     rewrittenText: string, 
     onAcceptAll: (rewrittenText: string) => void, 
-    showDiff: boolean = true, // Default to true for existing Quick Rewrite
+    showDiff: boolean = false, // Default to no diff (consistent with tailored rewrite)
     rewriteNote?: string, // Optional note about the rewrite
     onRetry?: () => void
   ) {
@@ -52,18 +53,24 @@ export class RewriteModal extends Modal {
 
     // --- Rewritten Text Pane ---
     const rewrittenContainer = contentEl.createDiv("text-container rewritten-text-container");
-    const rewrittenTitle = this.showDiff ? "Rewritten (changes highlighted)" : "Rewritten Text";
-    rewrittenContainer.createEl("h4", { text: rewrittenTitle });
-    const rewrittenContentDiv = rewrittenContainer.createDiv("modal-text-content");
+    rewrittenContainer.createEl("h4", { text: "Rewritten Text" });
+    this.rewrittenContentDiv = rewrittenContainer.createDiv("modal-text-content");
     
-    if (this.showDiff) {
-      const diffResult: DiffResult = annotateDiff(this.originalText, this.rewrittenText);
-      const annotatedRewrittenText = diffResult.annotated;
-      MarkdownRenderer.render(this.app, annotatedRewrittenText, rewrittenContentDiv, "", this as unknown as Component);
-    } else {
-      // Just show the plain rewritten text, but still render its Markdown
-      MarkdownRenderer.render(this.app, this.rewrittenText, rewrittenContentDiv, "", this as unknown as Component);
-    }
+    // Initial render of rewritten text
+    this.updateRewrittenText();
+
+    // --- Diff Toggle Control ---
+    const toggleSetting = new Setting(contentEl)
+      .setName("Show changes highlighted")
+      .setDesc("Toggle to highlight the differences between original and rewritten text")
+      .addToggle(toggle => {
+        toggle.setValue(this.showDiff);
+        toggle.onChange(value => {
+          this.showDiff = value;
+          this.updateRewrittenText();
+        });
+      });
+    toggleSetting.settingEl.addClass("diff-toggle");
 
     // --- Action Buttons ---
     const actionSetting = new Setting(contentEl)
@@ -90,8 +97,22 @@ export class RewriteModal extends Modal {
         .onClick(() => {
           this.close();
         }));
+  }
+
+  private updateRewrittenText() {
+    if (!this.rewrittenContentDiv) return;
     
-    // Inline styles removed, will be handled by styles.css
+    // Clear the content div
+    this.rewrittenContentDiv.empty();
+    
+    if (this.showDiff) {
+      const diffResult: DiffResult = annotateDiff(this.originalText, this.rewrittenText);
+      const annotatedRewrittenText = diffResult.annotated;
+      MarkdownRenderer.render(this.app, annotatedRewrittenText, this.rewrittenContentDiv, "", this as unknown as Component);
+    } else {
+      // Just show the plain rewritten text, but still render its Markdown
+      MarkdownRenderer.render(this.app, this.rewrittenText, this.rewrittenContentDiv, "", this as unknown as Component);
+    }
   }
 
   override onClose() {

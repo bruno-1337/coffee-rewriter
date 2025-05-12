@@ -140,3 +140,15 @@ textarea.coffee-settings-prompt-textarea {
   justify-content: flex-end;
   padding-top: 10px;
 }
+
+/* Styles for diff toggle in RewriteModal */
+.coffee-rewrite-modal .setting-item.diff-toggle {
+  margin-bottom: 12px;  /* More spacing before the rewritten text display */
+  padding: 4px 8px;     /* Compact padding */
+  background-color: var(--background-secondary-alt);
+  border-radius: var(--radius-s);
+}
+
+.coffee-rewrite-modal .setting-item.diff-toggle .setting-item-control {
+  padding-top: 0;  /* Override default padding */
+}

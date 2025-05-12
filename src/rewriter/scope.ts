@@ -3,6 +3,8 @@ import CoffeeRewriter from "../main";
 import { requestRewrite } from "../llm/index";
 import { showNotice } from "../utils/notice";
 import { RewriteModal } from "../rewrite-modal";
+import { TailoredPromptModal } from "../tailored-prompt-modal";
+import { ChooseTextModal } from "../choose-text-modal";
 
 export async function rewriteScope(plugin: CoffeeRewriter, editor: Editor): Promise<void> {
   const sel = editor.getSelection();
@@ -61,13 +63,23 @@ export async function rewriteScope(plugin: CoffeeRewriter, editor: Editor): Prom
   };
 
   // The modal will internally use originalText and textForModalAndAcceptance to create the diff view
-  // For Quick Rewrite, we want to show the diff and include the note from the LLM
+  // For Quick Rewrite, we want to show the diff by default but let users toggle it if desired
   new RewriteModal(
     plugin.app, 
     originalText, 
     textForModalAndAcceptance, 
     onAcceptAll, 
-    true, // Show diff
-    rewriteNote // Pass the note from the LLM
+    true, // Show diff by default
+    rewriteNote, // Pass the note from the LLM
+    () => {
+      new ChooseTextModal(
+        plugin.app,
+        originalText,
+        textForModalAndAcceptance,
+        (selectedText: string) => {
+          new TailoredPromptModal(plugin.app, selectedText, plugin, editor).open();
+        }
+      ).open();
+    }
   ).open();
 }
