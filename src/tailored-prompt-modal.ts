@@ -14,12 +14,14 @@ export class TailoredPromptModal extends Modal {
   private chosenPromptTemplate: PromptTemplate | null = null;
   private readonly CUSTOM_PROMPT_ID = "__custom__";
   private promptPreviewArea!: HTMLDivElement;
+  private textToRewrite: string;
 
   constructor(app: App, selectedText: string, plugin: CoffeeRewriter, editor: Editor) {
     super(app);
     this.selectedText = selectedText;
     this.plugin = plugin;
     this.editor = editor;
+    this.textToRewrite = selectedText;
   }
 
   override onOpen() {
@@ -28,12 +30,21 @@ export class TailoredPromptModal extends Modal {
     contentEl.addClass("coffee-tailored-prompt-modal");
 
     contentEl.createEl("h2", { text: "Tailored Rewrite" });
-    contentEl.createEl("p", { text: "Select a prompt template or write your own:" });
+
+    // --- Display selected text --- Start
+    const textPreviewContainer = contentEl.createDiv("text-container original-text-container text-to-rewrite-container");
+    new Setting(textPreviewContainer)
+      .setName('Text to Rewrite:')
+      .setHeading()
+      .settingEl.addClass('coffee-text-to-rewrite-label');
+
+    const textPreviewContentDiv = textPreviewContainer.createDiv("modal-text-content");
+    MarkdownRenderer.render(this.app, this.textToRewrite, textPreviewContentDiv, "", this as unknown as Component);
+    // --- Display selected text --- End
 
     // 1. Create the Setting for the dropdown first
     const dropdownSetting = new Setting(contentEl)
       .setName("Prompt Template");
-
     // 2. Create the containers for preview and custom input next
     // These will be direct children of contentEl, appearing after dropdownSetting.settingEl
     this.promptPreviewArea = contentEl.createDiv();
