@@ -8,7 +8,7 @@ import { RewriteResponse } from "../types/llm-api";
 
 // Append JSON instruction to any prompt
 function appendJsonInstruction(prompt: string): string {
-  return `${prompt.trim()} Reply with a JSON object that contains two fields: "rewrittenText" with the improved version, and "note" with a brief note about what was changed. Always return valid JSON.`;
+  return `${prompt.trim()} Reply with ONLY ONE JSON object containing two fields: "rewrittenText" (containing the entire improved version as a single string, including any lists or paragraphs) and "note" (containing a brief note about what was changed). Always return a single, valid JSON object. Do not return a list of JSON objects.`;
 }
 
 // Parse LLM response as JSON or construct a fallback object
