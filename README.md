@@ -20,23 +20,20 @@
 | **Tailored Rewrite**       | Apply specific instructions by choosing from saved prompt templates or writing a custom prompt on the fly. |
 | **Prompt Management**      | Create, edit, and manage a library of your favorite prompt templates in the plugin settings.               |
 | **Interactive Review**     | Review AI suggestions with highlighted changes (diff view) before accepting.                               |
-| **AI-Generated Notes**     | Get brief notes from the AI explaining what changes were made during the rewrite.                          |
 
 Right click a paragraph or selection and choose your flavour (Quick rewrite or Tailored rewrite)
 
-![image](https://github.com/user-attachments/assets/d99445bf-2cde-49eb-a3a3-2ff87a12bf9b)
+![image](https://github.com/user-attachments/assets/b4952737-c7bf-4504-93f6-e6d67b00aed2)
 
 
 If you choose quick rewrite, it will use the prompt found in the plugin settings. For tailored rewrite, select the style of rewrite you want (or select custom prompt)
 
-![image](https://github.com/user-attachments/assets/05fa6287-20b2-439a-a015-63495579b796)
+![image](https://github.com/user-attachments/assets/dbf13fee-482f-45d2-a3d1-a3907b1d6a8d)
 
 
 Approve your rewrite or improve it!
 
-![image](https://github.com/user-attachments/assets/a6e909b7-c664-4517-917a-41d0f5d46b3f)
-
-
+![image](https://github.com/user-attachments/assets/10b6d22f-7e71-4f3e-9855-e396bc7928ae)
 
 
 ## 🔌 Supported LLM Providers
