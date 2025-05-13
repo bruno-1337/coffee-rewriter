@@ -35,4 +35,30 @@ export function getPrecedingParagraphs(editor: Editor, numParagraphs: number): s
     console.error("Error getting preceding paragraphs:", error);
     return ""; // Return empty string on error
   }
+}
+
+export function getPrecedingLines(editor: Editor, numLines: number): string {
+  try {
+    if (numLines <= 0) return "";
+
+    const cursor = editor.getCursor("from"); // start of selection or cursor
+    const startLine = cursor.line;
+
+    if (startLine === 0) return "";
+
+    const fromLine = Math.max(0, startLine - numLines);
+    const lines: string[] = [];
+    for (let i = fromLine; i < startLine; i++) {
+      lines.push(editor.getLine(i));
+    }
+
+    // Remove leading/trailing blank lines for neatness
+    while (lines.length && lines[0].trim() === "") lines.shift();
+    while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
+
+    return lines.join("\n");
+  } catch (error) {
+    console.error("Error getting preceding lines:", error);
+    return "";
+  }
 } 

@@ -4,9 +4,9 @@ import { requestRewrite } from "./llm/index";
 import { RewriteModal } from "./rewrite-modal";
 import { PromptTemplate } from "./types/settings";
 import { ChooseTextModal } from "./choose-text-modal";
-import { getPrecedingParagraphs } from "./utils/editor-utils";
+import { getPrecedingParagraphs, getPrecedingLines } from "./utils/editor-utils";
 
-type ContextScope = "none" | "full" | "paragraphs";
+type ContextScope = "none" | "full" | "paragraphs" | "lines";
 
 export class TailoredPromptModal extends Modal {
   private selectedText: string;
@@ -22,6 +22,8 @@ export class TailoredPromptModal extends Modal {
   private contextEnabled: boolean = false;
   private contextScope: ContextScope = "none";
   private contextOptionsSetting: Setting | null = null;
+  private contextLinesCount: number = 3;
+  private contextLinesSetting: Setting | null = null;
 
   constructor(app: App, selectedText: string, plugin: CoffeeRewriter, editor: Editor) {
     super(app);
@@ -153,13 +155,43 @@ export class TailoredPromptModal extends Modal {
       .setName("Context Scope")
       .addDropdown(dd => {
         dd.addOption("paragraphs", "Previous 3 Paragraphs");
+        dd.addOption("lines", "Previous N Lines");
         dd.addOption("full", "Full Document");
         dd.setValue(this.contextScope)
           .onChange(value => {
             this.contextScope = value as ContextScope;
+            this.toggleContextOptionsUI();
           });
       });
     this.toggleContextOptionsUI();
+
+    // Lines count setting (hidden by default, only for 'lines' scope)
+    this.contextLinesSetting = new Setting(ctxOptionsContainer)
+      .setName("Number of lines before selection")
+      .setDesc("How many lines before the selection to include as context")
+      .addText(text => {
+        const maxLines = this.editor.getCursor("from").line;
+        this.contextLinesSetting?.setDesc(`How many lines before the selection to include as context (1-${maxLines || 1})`);
+
+        text.inputEl.type = "number";
+        text.inputEl.min = "1";
+        text.inputEl.max = String(maxLines || 1);
+        text.setValue(String(this.contextLinesCount));
+        text.onChange(val => {
+          const currentMax = parseInt(text.inputEl.max, 10) || 1;
+          const num = parseInt(val, 10);
+          if (!isNaN(num) && num > 0 && num <= currentMax) {
+            this.contextLinesCount = num;
+          } else if (!isNaN(num) && num > currentMax) {
+            this.contextLinesCount = currentMax;
+            text.setValue(String(currentMax));
+          } else if (!isNaN(num) && num <= 0) {
+            this.contextLinesCount = 1;
+            text.setValue("1");
+          }
+        });
+      });
+    this.contextLinesSetting.settingEl.style.display = 'none';
 
     // --- Action Buttons ---
     const actionButtonContainer = contentEl.createDiv("tailored-prompt-actions");
@@ -204,15 +236,18 @@ export class TailoredPromptModal extends Modal {
   private toggleContextOptionsUI() {
       if (this.contextOptionsSetting) {
           if (this.contextEnabled) {
-              this.contextOptionsSetting.settingEl.style.display = ''; // Show
-              // Ensure the dropdown reflects the current scope if just enabled
-              if (this.contextScope === 'none') this.contextScope = 'paragraphs'; // Default
-              if (this.contextOptionsSetting?.controlEl.querySelector('select')) {
-                   (this.contextOptionsSetting.controlEl.querySelector('select') as HTMLSelectElement).value = this.contextScope;
-              }
+              this.contextOptionsSetting.settingEl.style.display = '';
+              if (this.contextScope === 'none') this.contextScope = 'paragraphs';
           } else {
-              this.contextOptionsSetting.settingEl.style.display = 'none'; // Hide
-              this.contextScope = 'none'; // Reset scope when context is disabled
+              this.contextOptionsSetting.settingEl.style.display = 'none';
+              this.contextScope = 'none';
+          }
+      }
+      if (this.contextLinesSetting) {
+          if (this.contextEnabled && this.contextScope === 'lines') {
+              this.contextLinesSetting.settingEl.style.display = '';
+          } else {
+              this.contextLinesSetting.settingEl.style.display = 'none';
           }
       }
   }
@@ -251,6 +286,11 @@ export class TailoredPromptModal extends Modal {
       const precedingParagraphs = getPrecedingParagraphs(this.editor, 3);
       if (precedingParagraphs) {
           contextPrefix = `Context from preceding paragraphs:\n\`\`\`\n${precedingParagraphs}\n\`\`\`\n\n---\n\n`;
+      }
+    } else if (contextScope === "lines") {
+      const precedingLines = getPrecedingLines(this.editor, this.contextLinesCount);
+      if (precedingLines) {
+        contextPrefix = `Context from preceding lines:\n\`\`\`\n${precedingLines}\n\`\`\`\n\n---\n\n`;
       }
     }
     // --- End Context Retrieval ---
