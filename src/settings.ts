@@ -19,22 +19,22 @@ export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
   promptTemplates: [
     {
       id: "default-quick-rewrite",
-      name: "Quick Rewrite",
+      name: "Quick rewrite",
       prompt: "Improve clarity, grammar, and conciseness of the following text."
     },
     {
       id: "pirate-speak",
-      name: "Pirate Speak",
+      name: "Pirate speak",
       prompt: "Rewrite the following text as if you were a swashbuckling pirate, arrr! Keep the core meaning but infuse it with pirate slang and bravado."
     },
     {
       id: "professional-tone",
-      name: "Professional Tone",
+      name: "Professional tone",
       prompt: "Please rewrite the following text in a more professional and formal tone. Ensure clarity, conciseness, and appropriate business language. Avoid jargon where possible, or explain it if necessary."
     },
     {
       id: "academic-phd-style",
-      name: "Academic (PhD Style)",
+      name: "Academic (PhD style)",
       prompt: "Please revise the following text to reflect the style, depth, and rigor of a PhD-level academic paper. Focus on sophisticated vocabulary, nuanced argumentation, formal scholarly tone, and logical precision."
     }
   ],
@@ -137,7 +137,7 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
           return;
       }
 
-      const prerequisitePlaceholder = `--Set ${prerequisiteName} First--`;
+      const prerequisitePlaceholder = `-- Set ${prerequisiteName} first --`;
       const fullPrerequisiteMessage = `Set ${prerequisiteSettingField} to load models`;
 
       if (!prerequisitePresent) {
@@ -177,9 +177,9 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
 
       currentDropdownComponent.selectEl.options.length = 0;
       if (models.length === 0) {
-        currentDropdownComponent.addOption("", "--No models found or loaded--");
+        currentDropdownComponent.addOption("", "-- No models found or loaded --");
       } else {
-        currentDropdownComponent.addOption("", "--Select Model--");
+        currentDropdownComponent.addOption("", "-- Select model --");
         models.forEach(modelName => {
           if (currentDropdownComponent) currentDropdownComponent.addOption(modelName, modelName);
         });
@@ -190,7 +190,7 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     settingControl.addDropdown(async (dd: DropdownComponent) => {
       currentDropdownComponent = dd;
       dd.selectEl.options.length = 0;
-      dd.addOption("", "--Select Model--");
+      dd.addOption("", "-- Select model --");
       dd.setValue(get()); 
 
       dd.onChange(async (val) => {
@@ -227,7 +227,7 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     }
 
     const templateManagementSetting = new Setting(this.promptTemplateSettingsContainer)
-      .setName("Manage Templates"); 
+      .setName("Manage templates"); 
 
     templateManagementSetting.addButton(button => button
       .setIcon("plus")
@@ -293,7 +293,7 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
 
     if (selectedTemplateObject) {
       new Setting(this.promptTemplateSettingsContainer)
-        .setName("Selected Prompt Content")
+        .setName("Selected prompt content")
         .setDesc("Content of the template selected above. Click the pencil icon to edit.");
 
       const contentDisplayBox = this.promptTemplateSettingsContainer.createDiv({
@@ -348,9 +348,9 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h3", { text: "LLM Provider Settings" });
+    new Setting(containerEl).setName("LLM provider settings").setHeading();
     new Setting(containerEl)
-      .setName("LLM Provider")
+      .setName("LLM provider")
       .setDesc("Choose which backend to use for rewriting.")
       .addDropdown((dd: DropdownComponent) => {
         dd.addOption("openai", "OpenAI");
@@ -368,27 +368,27 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
 
     const p = this.plugin.cfg.provider;
     if (p === "openai") {
-      this.addTextSetting(containerEl, "API Key", "Your OpenAI secret key.", () => this.plugin.cfg.openAiKey, (v) => (this.plugin.cfg.openAiKey = v), true);
+      this.addTextSetting(containerEl, "API key", "Your OpenAI secret key.", () => this.plugin.cfg.openAiKey, (v) => (this.plugin.cfg.openAiKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "OpenAI model.", "openai", () => this.plugin.cfg.openAiModel, (v) => (this.plugin.cfg.openAiModel = v));
     } else if (p === "gemini") {
-      this.addTextSetting(containerEl, "API Key", "Google AI API key.", () => this.plugin.cfg.geminiKey, (v) => (this.plugin.cfg.geminiKey = v), true);
+      this.addTextSetting(containerEl, "API key", "Google AI API key.", () => this.plugin.cfg.geminiKey, (v) => (this.plugin.cfg.geminiKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "Gemini model.", "gemini", () => this.plugin.cfg.geminiModel, (v) => (this.plugin.cfg.geminiModel = v));
     } else if (p === "lmstudio") {
       this.addTextSetting(containerEl, "Server URL", "LM Studio endpoint (http://host:port)", () => this.plugin.cfg.lmstudioEndpoint, (v) => (this.plugin.cfg.lmstudioEndpoint = v));
       this.addModelDropdownSetting(containerEl, "Model", "LM Studio model (requires server to be running).", "lmstudio", () => this.plugin.cfg.lmStudioModel, (v) => (this.plugin.cfg.lmStudioModel = v));
     } else if (p === "claude") {
-      this.addTextSetting(containerEl, "API Key", "Your Anthropic Claude API key.", () => this.plugin.cfg.claudeKey, (v) => (this.plugin.cfg.claudeKey = v), true);
+      this.addTextSetting(containerEl, "API key", "Your Anthropic Claude API key.", () => this.plugin.cfg.claudeKey, (v) => (this.plugin.cfg.claudeKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "Claude model.", "claude", () => this.plugin.cfg.claudeModel, (v) => (this.plugin.cfg.claudeModel = v));
     } else if (p === "ollama") {
       this.addTextSetting(containerEl, "Server URL", "Ollama endpoint (http://host:port)", () => this.plugin.cfg.ollamaEndpoint, (v) => (this.plugin.cfg.ollamaEndpoint = v));
       this.addModelDropdownSetting(containerEl, "Model", "Ollama model (requires server to be running).", "ollama", () => this.plugin.cfg.ollamaModel, (v) => (this.plugin.cfg.ollamaModel = v));
     }
 
-    containerEl.createEl("h3", { text: "Prompts" }); 
+    new Setting(containerEl).setName("Prompts").setHeading();
     this.promptTemplateSettingsContainer = containerEl.createDiv("prompt-templates-settings-area");
     this.renderPromptTemplateEditor(); 
 
-    containerEl.createEl("h3", { text: "Other Settings" });
+    new Setting(containerEl).setName("Other settings").setHeading();
     new Setting(containerEl)
       .setName("Preserve text inside quotes")
       .setDesc("Do not rewrite text that is wrapped in \"double quotes\".")

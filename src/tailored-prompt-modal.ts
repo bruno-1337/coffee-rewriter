@@ -30,7 +30,7 @@ export class TailoredPromptModal extends Modal {
     contentEl.empty();
     contentEl.addClass("coffee-tailored-prompt-modal");
 
-    contentEl.createEl("h2", { text: "Tailored Rewrite" });
+    contentEl.createEl("h2", { text: "Tailored rewrite" });
 
     // --- Display selected text --- Start
     const textPreviewContainer = contentEl.createDiv("text-container original-text-container text-to-rewrite-container");
@@ -45,7 +45,7 @@ export class TailoredPromptModal extends Modal {
 
     // 1. Create the Setting for the dropdown first
     const dropdownSetting = new Setting(contentEl)
-      .setName("Prompt Template");
+      .setName("Prompt template");
     // 2. Create the containers for preview and custom input next
     // These will be direct children of contentEl, appearing after dropdownSetting.settingEl
     this.promptPreviewArea = contentEl.createDiv();
@@ -98,7 +98,7 @@ export class TailoredPromptModal extends Modal {
     // 4. Setup Custom Prompt Text Area (inside the customPromptContainer)
     // This setting is appended to this.customPromptContainer, not contentEl directly here.
     const customPromptSetting = new Setting(this.customPromptContainer)
-      .setName("Custom Prompt")
+      .setName("Custom prompt")
       .setDesc("Enter your custom prompt. The selected text will be appended to this.");
     
     customPromptSetting.addTextArea(textArea => {

@@ -34,26 +34,26 @@ export class RewriteModal extends Modal {
     contentEl.empty();
     contentEl.addClass("coffee-rewrite-modal");
 
-    contentEl.createEl("h2", { text: "Review Rewrite" });
+    new Setting(contentEl).setName("Review rewrite").setHeading();
 
     // --- Note about the rewrite (if available) ---
     if (this.rewriteNote) {
       const noteContainer = contentEl.createDiv("note-container");
-      noteContainer.createEl("h4", { text: "Note from the AI" });
+      new Setting(noteContainer).setName("Note from the AI").setHeading();
       const noteContent = noteContainer.createDiv("note-content");
       noteContent.setText(this.rewriteNote);
     }
 
     // --- Original Text Pane ---
     const originalContainer = contentEl.createDiv("text-container original-text-container");
-    originalContainer.createEl("h4", { text: "Original" });
+    new Setting(originalContainer).setName("Original").setHeading();
     const originalContentDiv = originalContainer.createDiv("modal-text-content");
     // Render original text, including any Markdown it might contain
     MarkdownRenderer.render(this.app, this.originalText, originalContentDiv, "", this as unknown as Component);
 
     // --- Rewritten Text Pane ---
     const rewrittenContainer = contentEl.createDiv("text-container rewritten-text-container");
-    rewrittenContainer.createEl("h4", { text: "Rewritten Text" });
+    new Setting(rewrittenContainer).setName("Rewritten text").setHeading();
     this.rewrittenContentDiv = rewrittenContainer.createDiv("modal-text-content");
     
     // Initial render of rewritten text
