@@ -2,7 +2,7 @@
 	"id": "coffee-rewriter",
 	"name": "Coffee Rewriter",
 	"description": "Easy AI Rewriting for everyone.",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"minAppVersion": "1.5.8",
 	"isDesktopOnly": true,
 	"author": "Bruno Badaró",
