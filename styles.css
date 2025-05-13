@@ -152,3 +152,43 @@ textarea.coffee-settings-prompt-textarea {
 .coffee-rewrite-modal .setting-item.diff-toggle .setting-item-control {
   padding-top: 0;  /* Override default padding */
 }
+
+/* Settings - Prompt Editor Display Box */
+.coffee-prompt-display-box {
+  width: 100%;
+  padding: var(--size-2-3);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background-color: var(--background-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: var(--size-2-2);
+  margin-bottom: var(--size-4-4);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  line-height: var(--line-height-normal);
+}
+
+/* Optional: Style for the text-to-rewrite box in tailored prompt modal */
+.coffee-tailored-prompt-modal .text-to-rewrite-container .modal-text-content {
+  max-height: 150px; /* Example max height */
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  padding: var(--size-2-3);
+  border-radius: var(--radius-m);
+  background-color: var(--background-secondary);
+  margin-top: var(--size-2-2);
+}
+
+/* Optional: Style for the rewrite modal content panes */
+.coffee-rewrite-modal .modal-text-content {
+  max-height: 200px; /* Example max height */
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  padding: var(--size-2-3);
+  border-radius: var(--radius-m);
+  background-color: var(--background-secondary);
+  margin-top: var(--size-2-2);
+}

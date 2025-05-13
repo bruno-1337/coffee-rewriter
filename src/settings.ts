@@ -300,18 +300,6 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
         cls: "coffee-prompt-display-box",
       });
       contentDisplayBox.setText(selectedTemplateObject.prompt);
-      
-      contentDisplayBox.style.width = "100%";
-      contentDisplayBox.style.padding = "var(--size-2-3)";
-      contentDisplayBox.style.border = "1px solid var(--background-modifier-border)";
-      contentDisplayBox.style.borderRadius = "var(--radius-m)";
-      contentDisplayBox.style.backgroundColor = "var(--background-secondary)";
-      contentDisplayBox.style.whiteSpace = "pre-wrap";
-      contentDisplayBox.style.wordBreak = "break-word";
-      contentDisplayBox.style.maxHeight = "150px";
-      contentDisplayBox.style.overflowY = "auto";
-      contentDisplayBox.style.marginTop = "var(--size-2-2)";
-      contentDisplayBox.style.marginBottom = "var(--size-4-4)";
 
     } else if (this.plugin.cfg.promptTemplates.length > 0 && this.selectedTemplateIdForEditing) {
       new Setting(this.promptTemplateSettingsContainer)
