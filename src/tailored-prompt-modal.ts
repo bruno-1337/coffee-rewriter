@@ -104,7 +104,7 @@ export class TailoredPromptModal extends Modal {
     // --- Context Settings --- Start
     new Setting(contentEl)
       .setName("Include Context")
-      .setDesc("Provide surrounding text to the LLM for better understanding.")
+      .setDesc("Provide surrounding text to the LLM for better understanding. (increases cost on non-free models)")
       .addToggle(toggle => toggle
         .setValue(this.contextEnabled)
         .onChange(value => {
