@@ -110,12 +110,12 @@ export class TailoredPromptModal extends Modal {
     // Template preview area for selected template
     this.promptPreviewArea = promptConfigSection.createDiv("prompt-preview-container");
     this.promptPreviewArea.addClass("coffee-tailored-prompt-preview");
-    this.promptPreviewArea.style.display = "none";
+    this.promptPreviewArea.addClass("coffee-hidden");
 
     // Custom prompt input area
     this.customPromptContainer = promptConfigSection.createDiv("custom-prompt-container-div");
     this.customPromptContainer.addClass("coffee-tailored-custom-prompt-container");
-    this.customPromptContainer.style.display = "none";
+    this.customPromptContainer.addClass("coffee-hidden");
     
     const customPromptSetting = new Setting(this.customPromptContainer)
       .setName("Your custom prompt")
@@ -191,7 +191,6 @@ export class TailoredPromptModal extends Modal {
           }
         });
       });
-    this.contextLinesSetting.settingEl.style.display = 'none';
 
     // --- Action Buttons ---
     const actionButtonContainer = contentEl.createDiv("tailored-prompt-actions");
@@ -224,30 +223,30 @@ export class TailoredPromptModal extends Modal {
     // Ensure containers exist before trying to change their style
     if (this.customPromptContainer && this.promptPreviewArea) {
         if (showCustom) {
-            this.customPromptContainer.style.display = "block";
-            this.promptPreviewArea.style.display = "none"; 
+            this.customPromptContainer.classList.remove('coffee-hidden');
+            this.promptPreviewArea.classList.add('coffee-hidden'); 
         } else {
-            this.customPromptContainer.style.display = "none";
-            this.promptPreviewArea.style.display = "block"; 
+            this.customPromptContainer.classList.add('coffee-hidden');
+            this.promptPreviewArea.classList.remove('coffee-hidden'); 
         }
     }
   }
 
   private toggleContextOptionsUI() {
-      if (this.contextOptionsSetting) {
+      if (this.contextOptionsSetting?.settingEl) {
           if (this.contextEnabled) {
-              this.contextOptionsSetting.settingEl.style.display = '';
+              this.contextOptionsSetting.settingEl.classList.remove('coffee-hidden');
               if (this.contextScope === 'none') this.contextScope = 'paragraphs';
           } else {
-              this.contextOptionsSetting.settingEl.style.display = 'none';
+              this.contextOptionsSetting.settingEl.classList.add('coffee-hidden');
               this.contextScope = 'none';
           }
       }
-      if (this.contextLinesSetting) {
+      if (this.contextLinesSetting?.settingEl) {
           if (this.contextEnabled && this.contextScope === 'lines') {
-              this.contextLinesSetting.settingEl.style.display = '';
+              this.contextLinesSetting.settingEl.classList.remove('coffee-hidden');
           } else {
-              this.contextLinesSetting.settingEl.style.display = 'none';
+              this.contextLinesSetting.settingEl.classList.add('coffee-hidden');
           }
       }
   }

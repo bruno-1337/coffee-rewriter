@@ -219,6 +219,7 @@
   line-height: 1.5;
   font-family: var(--font-text);
   transition: border-color 200ms ease;
+  margin-top: var(--size-2-2);
 }
 
 .coffee-tailored-prompt-modal .coffee-tailored-prompt-textarea:focus,
@@ -572,3 +573,14 @@
 }
 
 /* ========== END CHOOSE TEXT MODAL FIXES ========== */
+
+/* Class to hide elements */
+.coffee-hidden {
+  display: none !important;
+}
+
+/* Ensure consistent spacing around headings */
+.coffee-rewrite-modal .setting-item-heading {
+  margin-top: 0;
+  margin-bottom: 0;
+}

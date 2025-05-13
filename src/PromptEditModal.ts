@@ -75,8 +75,6 @@ export class PromptEditModal extends Modal {
     
     this.promptInput.inputEl.rows = 8;
     this.promptInput.inputEl.addClass('coffee-settings-prompt-textarea'); 
-    this.promptInput.inputEl.style.width = '100%'; // Ensure it takes full width
-    this.promptInput.inputEl.style.marginTop = 'var(--size-2-2)'; // Add some space below the label Setting
 
     // Buttons: Save and Cancel. Delete button removed from modal.
     new Setting(contentEl)
