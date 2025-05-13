@@ -1,162 +1,342 @@
-/* placeholder */
+/* ========== COFFEE REWRITER PLUGIN STYLES ========== */
 
-/* Modal Styles */
-.coffee-rewrite-modal .modal-content {
-  padding-bottom: 50px; /* Space for fixed buttons */
+/* === Base Modal Styles === */
+.coffee-rewrite-modal .modal-content,
+.coffee-tailored-prompt-modal .modal-content,
+.coffee-choose-text-modal .modal-content,
+.coffee-prompt-edit-modal .modal-content {
+  padding-bottom: 1.5rem;
+  max-width: 95%; /* Ensure there's some margin */
+  margin: 0 auto;
 }
 
-/* General container for each text block (Original, Rewritten) */
-.coffee-rewrite-modal .text-container {
-  margin-bottom: 20px; /* Space between Original and Rewritten blocks, and before buttons */
+/* Modal headers */
+.coffee-rewrite-modal h2,
+.coffee-tailored-prompt-modal h2,
+.coffee-choose-text-modal h2,
+.coffee-prompt-edit-modal h2 {
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
 }
 
-.coffee-rewrite-modal .text-container h4 {
-  margin-bottom: 8px; /* Space between title (Original/Rewritten) and content */
+/* Section headers in modals */
+.coffee-rewrite-modal .setting-item-heading,
+.coffee-tailored-prompt-modal .setting-item-heading,
+.coffee-choose-text-modal .setting-item-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-accent);
 }
 
-/* Styling for the div that holds the rendered Markdown content */
-.coffee-rewrite-modal .modal-text-content {
-  border: 1px solid var(--background-modifier-border);
-  padding: 10px;
-  border-radius: var(--radius-m);
-  max-height: 40vh; /* Adjust as needed, e.g., 30vh or 40vh per pane */
-  overflow-y: auto;
-  white-space: pre-wrap; /* Ensure wrapping for pre-like behavior if MarkdownRenderer doesn't handle it */
-  word-break: break-word;
-}
-
-/* Styles for the AI note in RewriteModal */
-.coffee-rewrite-modal .note-container {
+/* === Text Containers === */
+/* Container for original/rewritten text */
+.text-container {
   margin-bottom: 1rem;
+  border-radius: var(--radius-l);
+  border: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  transition: all 200ms ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Container headers */
+.text-container h4,
+.text-container .setting-item-heading {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  background-color: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Text content areas */
+.modal-text-content {
+  padding: 1rem;
+  background-color: var(--background-primary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* === Diff Highlighting === */
+/* Highlight style for additions */
+.coffee-rewrite-modal .modal-text-content mark {
+  background-color: #ffe438 !important;
+  color: #000 !important;
+  text-shadow: none !important;
+  padding: 0 2px;
+  border-radius: 2px;
+  margin: 0;
+}
+
+.coffee-rewrite-modal .modal-text-content mark:hover {
+  background-color: rgba(255, 230, 92, 0.6);
+}
+
+/* Dark/Light Mode Specific Adjustments for highlights */
+.theme-dark .coffee-rewrite-modal .modal-text-content mark {
+  background-color: rgba(171, 155, 20, 0.35);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.theme-light .coffee-rewrite-modal .modal-text-content mark {
+  background-color: rgba(255, 230, 92, 0.5);
+  color: #000;
+}
+
+/* === Diff Toggle Setting === */
+.coffee-rewrite-modal .setting-item.diff-toggle {
+  margin: 0.8rem 0 1.2rem;
+  padding: 0.6rem 1rem;
+  background-color: var(--background-secondary-alt);
+  border-radius: var(--radius-m);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.theme-dark .coffee-rewrite-modal .setting-item.diff-toggle {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.coffee-rewrite-modal .setting-item.diff-toggle .setting-item-name,
+.coffee-rewrite-modal .setting-item.diff-toggle .setting-item-description {
+  color: var(--text-normal);
+}
+
+/* === Note from AI Section === */
+.coffee-rewrite-modal .note-container {
+  margin-bottom: 1.2rem;
+  animation: fadeIn 400ms ease;
 }
 
 .coffee-rewrite-modal .note-content {
-  padding: 0.5rem;
-  background-color: var(--background-modifier-form-field);
+  padding: 0.8rem 1rem;
+  background-color: var(--background-secondary);
   border-radius: var(--radius-m);
+  border-left: 4px solid var(--text-accent);
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.coffee-rewrite-modal .setting-item-control {
-  justify-content: flex-end; /* Align buttons to the right */
-  padding-top: 10px;
-  /* position: fixed; */ /* If we want them at the bottom of the modal view */
-  /* bottom: 10px; */
-  /* right: 10px; */
-  /* background-color: var(--background-primary); */ /* ensure they are above content */
-  /* width: calc(100% - 2*var(--modal-padding)); */ /* Adjust width based on modal padding */
+/* === Action Buttons === */
+.coffee-rewrite-modal .setting-item-control,
+.coffee-tailored-prompt-modal .setting-item-control,
+.coffee-choose-text-modal .setting-item-control,
+.coffee-prompt-edit-modal .setting-item-control {
+  justify-content: flex-end;
+  padding-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
-/* Styling for <mark> tags, which MarkdownRenderer creates from ==highlight== */
-/* This will apply to highlights in the "Rewritten" pane */
-.coffee-rewrite-modal .modal-text-content mark {
-  background-color: #ffe65c; /* Your chosen bright yellow */
-  /* color: var(--text-normal); */ /* Ensure text contrast if needed */
+/* Button styling */
+.coffee-rewrite-modal button,
+.coffee-tailored-prompt-modal button,
+.coffee-choose-text-modal button,
+.coffee-prompt-edit-modal button {
+  border-radius: var(--radius-m);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 200ms ease;
 }
 
-/* Styles for TailoredPromptModal */
-.coffee-tailored-prompt-modal .modal-selected-text-display {
-  max-height: 20vh;
-  overflow-y: auto;
-  margin-bottom: 15px;
-  padding: 10px;
+/* Primary action button */
+.coffee-rewrite-modal button.mod-cta,
+.coffee-tailored-prompt-modal button.mod-cta,
+.coffee-choose-text-modal button.mod-cta,
+.coffee-prompt-edit-modal button.mod-cta {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.coffee-rewrite-modal button.mod-cta:hover,
+.coffee-tailored-prompt-modal button.mod-cta:hover,
+.coffee-choose-text-modal button.mod-cta:hover,
+.coffee-prompt-edit-modal button.mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+}
+
+/* Secondary buttons */
+.coffee-rewrite-modal button:not(.mod-cta),
+.coffee-tailored-prompt-modal button:not(.mod-cta),
+.coffee-choose-text-modal button:not(.mod-cta),
+.coffee-prompt-edit-modal button:not(.mod-cta) {
+  background-color: var(--interactive-normal);
   border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  box-sizing: border-box; /* Ensure consistent height calculation */
 }
 
-.coffee-tailored-prompt-modal .setting-item-name {
-  font-weight: bold; /* For "Prompt:" label */
+.coffee-rewrite-modal button:not(.mod-cta):hover,
+.coffee-tailored-prompt-modal button:not(.mod-cta):hover,
+.coffee-choose-text-modal button:not(.mod-cta):hover,
+.coffee-prompt-edit-modal button:not(.mod-cta):hover {
+  background-color: var(--interactive-hover);
 }
 
-.coffee-tailored-prompt-modal textarea.setting-input {
-  width: 100%;
-  /* min-height: 20vh; Removed this */
-  max-height: 20vh; /* Cap height to match display box */
-  overflow-y: auto; /* Add scroll for overflow */
-  resize: vertical;
-  margin-bottom: 15px;
-  box-sizing: border-box; /* Ensure consistent height calculation */
-  /* Default padding for textareas is usually 2px, if more is needed it can be added */
-  /* padding: 10px; Potentially add if visual match needs identical inner padding */
+/* === Tailored Prompt Modal === */
+/* Selected text display */
+.coffee-tailored-prompt-modal .text-to-rewrite-container {
+  margin-bottom: 1.5rem;
 }
 
-/* Styles for Settings Tab */
-.coffee-settings-prompt-container {
-  margin-bottom: var(--setting-item-spacing);
-}
-
-textarea.coffee-settings-prompt-textarea {
-  width: 100%;
-  min-height: 200px; /* Increased min-height */
-  resize: vertical;
-}
-
-/* Container for the prompt input textarea in TailoredPromptModal */
-.coffee-tailored-prompt-modal .coffee-tailored-prompt-input-container {
-  width: 100%;
-  box-sizing: border-box;
-  display: block; /* Ensure it takes full width as a block element */
-  margin-bottom: 15px; /* Add margin here to space it from action buttons */
-}
-
-.coffee-tailored-prompt-modal textarea.setting-input {
-  width: 100%;
-  max-height: 20vh;
-  overflow-y: auto;
-  resize: vertical;
-  box-sizing: border-box;
-  /* margin-bottom: 15px; /* Removed from here, moved to container */
-}
-
-/* Styles for TailoredPromptModal Prompt Preview */
+/* Dropdown and preview area */
 .coffee-tailored-prompt-modal .coffee-tailored-prompt-preview {
-  max-height: 20vh; /* Match other elements in this modal */
+  max-height: 20vh;
   overflow-y: auto;
-  margin-top: 10px; /* Space below the dropdown */
-  margin-bottom: 15px; /* Space above action buttons */
-  padding: 10px;
+  margin: 0.8rem 0 1.5rem;
+  padding: 1rem;
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
-  background-color: var(--background-secondary-alt); /* Slightly different background */
-  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  background-color: var(--background-secondary-alt);
+  white-space: pre-wrap;
   word-break: break-word;
-  font-size: var(--font-ui-smaller); /* Slightly smaller font for preview */
-  line-height: var(--line-height-normal);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Styles for ChooseTextModal */
-.coffee-choose-text-modal .text-container {
+/* Context options UI - Keep it discreet but visible */
+.coffee-tailored-prompt-modal .context-options-container {
+  margin: 0.5rem 0 1.5rem;
+  padding: 0.8rem 1rem;
+  background-color: var(--background-secondary-alt);
+  border-radius: var(--radius-m);
+  border-left: 3px solid var(--text-accent);
+}
+
+/* Custom prompt textarea */
+.coffee-tailored-prompt-modal .coffee-tailored-prompt-textarea,
+.coffee-prompt-edit-modal .coffee-settings-prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  max-height: 20vh;
+  padding: 0.8rem;
+  background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
-  padding: 10px;
-  margin-bottom: 20px;
-  cursor: pointer;
+  resize: vertical;
+  line-height: 1.5;
+  font-family: var(--font-text);
+  transition: border-color 200ms ease;
 }
+
+.coffee-tailored-prompt-modal .coffee-tailored-prompt-textarea:focus,
+.coffee-prompt-edit-modal .coffee-settings-prompt-textarea:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+/* === Choose Text Modal === */
+.coffee-choose-text-modal .text-container {
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.coffee-choose-text-modal .text-container:hover {
+  border-color: var(--text-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
 .coffee-choose-text-modal .text-container.selected {
   border-color: var(--interactive-accent);
-  background-color: var(--background-modifier-hover);
-}
-.coffee-choose-text-modal .setting-item-control {
-  justify-content: flex-end;
-  padding-top: 10px;
-}
-
-/* Styles for diff toggle in RewriteModal */
-.coffee-rewrite-modal .setting-item.diff-toggle {
-  margin-bottom: 12px;  /* More spacing before the rewritten text display */
-  padding: 4px 8px;     /* Compact padding */
   background-color: var(--background-secondary-alt);
-  border-radius: var(--radius-s);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.coffee-rewrite-modal .setting-item.diff-toggle .setting-item-control {
-  padding-top: 0;  /* Override default padding */
+/* === Enhanced ChooseTextModal === */
+.coffee-choose-text-modal .choose-text-instructions {
+  margin-bottom: 1.2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
-/* Settings - Prompt Editor Display Box */
+/* Remove two-column grid and use vertical layout instead */
+.coffee-choose-text-modal .choose-text-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.coffee-choose-text-modal .text-container {
+  margin-bottom: 0.5rem;
+  transition: all 200ms ease;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.coffee-choose-text-modal .text-container:hover {
+  border-color: var(--text-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.coffee-choose-text-modal .text-container.selected {
+  border-color: var(--interactive-accent);
+  background-color: var(--background-secondary-alt);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved button container styling */
+.coffee-choose-text-modal .choose-text-button-container {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.coffee-choose-text-modal .choose-text-button-container .setting-item {
+  border: none;
+  padding: 0;
+}
+
+.coffee-choose-text-modal .choose-text-button-container button {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent) !important;
+  border-radius: var(--radius-m);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 200ms ease;
+  border: none;
+}
+
+.coffee-choose-text-modal .choose-text-button-container button:hover {
+  background-color: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+}
+
+.coffee-choose-text-modal .choose-text-button-container button:disabled {
+  opacity: 0.5;
+  background-color: var(--interactive-normal);
+  color: var(--text-muted) !important;
+  transform: none;
+  box-shadow: none;
+}
+
+/* === Settings Tab === */
+/* Prompt editor display box */
 .coffee-prompt-display-box {
   width: 100%;
-  padding: var(--size-2-3);
+  padding: 1rem;
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-m);
   background-color: var(--background-secondary);
@@ -164,31 +344,271 @@ textarea.coffee-settings-prompt-textarea {
   word-break: break-word;
   max-height: 150px;
   overflow-y: auto;
-  margin-top: var(--size-2-2);
-  margin-bottom: var(--size-4-4);
+  margin: 0.75rem 0 1.5rem;
   font-family: var(--font-monospace);
-  font-size: var(--font-ui-smaller);
-  line-height: var(--line-height-normal);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Optional: Style for the text-to-rewrite box in tailored prompt modal */
-.coffee-tailored-prompt-modal .text-to-rewrite-container .modal-text-content {
-  max-height: 150px; /* Example max height */
+/* === Animations === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Mobile Optimizations === */
+@media (max-width: 768px) {
+  .coffee-rewrite-modal .modal-content,
+  .coffee-tailored-prompt-modal .modal-content,
+  .coffee-choose-text-modal .modal-content,
+  .coffee-prompt-edit-modal .modal-content {
+    padding: 1rem;
+  }
+  
+  .modal-text-content {
+    max-height: 30vh;
+  }
+  
+  .coffee-rewrite-modal .setting-item-control,
+  .coffee-tailored-prompt-modal .setting-item-control,
+  .coffee-choose-text-modal .setting-item-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .coffee-rewrite-modal button,
+  .coffee-tailored-prompt-modal button,
+  .coffee-choose-text-modal button {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* === Dark/Light Mode Specific Adjustments === */
+.theme-dark .coffee-rewrite-modal .modal-text-content mark {
+  background-color: rgba(255, 230, 92, 0.3);
+}
+
+.theme-light .coffee-rewrite-modal .modal-text-content mark {
+  background-color: rgba(255, 230, 92, 0.5);
+}
+
+/* === Two-Column Layout for RewriteModal === */
+.coffee-rewrite-modal .two-column-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure modal scrolls properly for long content */
+.modal {
+  max-height: 80vh;
   overflow-y: auto;
-  border: 1px solid var(--background-modifier-border);
-  padding: var(--size-2-3);
-  border-radius: var(--radius-m);
-  background-color: var(--background-secondary);
-  margin-top: var(--size-2-2);
 }
 
-/* Optional: Style for the rewrite modal content panes */
+/* Reset spacing between containers */
+.coffee-rewrite-modal .two-column-grid .text-container {
+  margin-bottom: 0;
+}
+
+/* Fix highlight color to be consistent bright yellow */
+.coffee-rewrite-modal .modal-text-content mark,
+.theme-dark .coffee-rewrite-modal .modal-text-content mark,
+.theme-light .coffee-rewrite-modal .modal-text-content mark {
+  background-color: rgba(255, 230, 0, 0.5) !important;
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+/* Fix highlight color on hover */
+.coffee-rewrite-modal .modal-text-content mark:hover,
+.theme-dark .coffee-rewrite-modal .modal-text-content mark:hover,
+.theme-light .coffee-rewrite-modal .modal-text-content mark:hover {
+  background-color: rgba(255, 230, 0, 0.7) !important;
+}
+
+/* Fix overlap issue by using proper blending */
 .coffee-rewrite-modal .modal-text-content {
-  max-height: 200px; /* Example max height */
-  overflow-y: auto;
-  border: 1px solid var(--background-modifier-border);
-  padding: var(--size-2-3);
-  border-radius: var(--radius-m);
-  background-color: var(--background-secondary);
-  margin-top: var(--size-2-2);
+  mix-blend-mode: normal;
 }
+
+/* === Enhanced TailoredPromptModal === */
+.coffee-tailored-prompt-modal .tailored-prompt-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.coffee-tailored-prompt-modal .tailored-prompt-section {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background-color: var(--background-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.coffee-tailored-prompt-modal .section-header {
+  background-color: var(--background-secondary-alt);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.coffee-tailored-prompt-modal .section-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+/* Text preview section */
+.coffee-tailored-prompt-modal .text-preview-section .text-container {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+/* Prompt section */
+.coffee-tailored-prompt-modal .prompt-selector-setting {
+  padding: 1rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.coffee-tailored-prompt-modal .prompt-preview-container {
+  padding: 1rem;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: var(--background-primary);
+  box-shadow: none;
+}
+
+.coffee-tailored-prompt-modal .custom-prompt-container-div {
+  padding: 1rem;
+}
+
+/* Context options section */
+.coffee-tailored-prompt-modal .context-options-section .setting-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--background-modifier-border-subtle);
+}
+
+.coffee-tailored-prompt-modal .context-options-section .setting-item:last-child {
+  border-bottom: none;
+}
+
+.coffee-tailored-prompt-modal .context-options-container {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  border-left: none;
+}
+
+/* Action buttons */
+.coffee-tailored-prompt-modal .tailored-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .coffee-tailored-prompt-modal .section-header h3 {
+    font-size: 0.9rem;
+  }
+  
+  .coffee-tailored-prompt-modal .prompt-selector-setting,
+  .coffee-tailored-prompt-modal .custom-prompt-container-div,
+  .coffee-tailored-prompt-modal .context-options-section .setting-item {
+    padding: 0.8rem;
+  }
+}
+
+/* Fix button visibility issues */
+.coffee-choose-text-modal .setting-item-control button {
+  width: 100%;
+  opacity: 1;
+  color: var(--text-on-accent);
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+}
+
+/* Fix any overflow issues */
+.modal-content {
+  overflow-y: auto;
+}
+
+/* Make diff toggle more visible on dark themes */
+.theme-dark .toggle-control .checkbox-container {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .toggle-control .checkbox-container.is-enabled {
+  background-color: var(--interactive-accent);
+}
+
+.coffee-choose-text-modal .text-container h4 {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  background-color: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.coffee-choose-text-modal .modal-text-content {
+  padding: 1rem;
+  background-color: var(--background-primary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Ensure no leftover green buttons */
+.choose-text-modal-greenbutton {
+  display: none !important;
+}
+
+/* Ensure consistent spacing around headings */
+.coffee-rewrite-modal .setting-item-heading {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* ========== CHOOSE TEXT MODAL FIXES ========== */
+
+/* Our proper continue button styling */
+.coffee-choose-text-continue-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: var(--radius-m);
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.coffee-choose-text-continue-button:hover:not([disabled]) {
+  background-color: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+}
+
+.coffee-choose-text-continue-button:disabled {
+  opacity: 0.5;
+  background-color: var(--interactive-normal);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* ========== END CHOOSE TEXT MODAL FIXES ========== */

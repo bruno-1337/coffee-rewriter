@@ -34,30 +34,18 @@ export class RewriteModal extends Modal {
     contentEl.empty();
     contentEl.addClass("coffee-rewrite-modal");
 
-    new Setting(contentEl).setName("Review rewrite").setHeading();
+    // Modal header
+    contentEl.createEl("h2", { text: "Review Your Rewrite" });
 
     // --- Note about the rewrite (if available) ---
     if (this.rewriteNote) {
       const noteContainer = contentEl.createDiv("note-container");
-      new Setting(noteContainer).setName("Note from the AI").setHeading();
+      new Setting(noteContainer)
+        .setName("Note from the AI")
+        .setHeading();
       const noteContent = noteContainer.createDiv("note-content");
       noteContent.setText(this.rewriteNote);
     }
-
-    // --- Original Text Pane ---
-    const originalContainer = contentEl.createDiv("text-container original-text-container");
-    new Setting(originalContainer).setName("Original").setHeading();
-    const originalContentDiv = originalContainer.createDiv("modal-text-content");
-    // Render original text, including any Markdown it might contain
-    MarkdownRenderer.render(this.app, this.originalText, originalContentDiv, "", this as unknown as Component);
-
-    // --- Rewritten Text Pane ---
-    const rewrittenContainer = contentEl.createDiv("text-container rewritten-text-container");
-    new Setting(rewrittenContainer).setName("Rewritten text").setHeading();
-    this.rewrittenContentDiv = rewrittenContainer.createDiv("modal-text-content");
-    
-    // Initial render of rewritten text
-    this.updateRewrittenText();
 
     // --- Diff Toggle Control ---
     const toggleSetting = new Setting(contentEl)
@@ -72,6 +60,28 @@ export class RewriteModal extends Modal {
       });
     toggleSetting.settingEl.addClass("diff-toggle");
 
+    // Vertical layout container
+    const textComparisonContainer = contentEl.createDiv("text-comparison-container");
+    textComparisonContainer.addClass("two-column-grid");
+    // --- Original Text Pane ---
+    const originalContainer = textComparisonContainer.createDiv("text-container original-text-container");
+    new Setting(originalContainer)
+      .setName("Original")
+      .setHeading();
+    const originalContentDiv = originalContainer.createDiv("modal-text-content");
+    // Render original text, including any Markdown it might contain
+    MarkdownRenderer.render(this.app, this.originalText, originalContentDiv, "", this as unknown as Component);
+
+    // --- Rewritten Text Pane ---
+    const rewrittenContainer = textComparisonContainer.createDiv("text-container rewritten-text-container");
+    new Setting(rewrittenContainer)
+      .setName("Rewritten text")
+      .setHeading();
+    this.rewrittenContentDiv = rewrittenContainer.createDiv("modal-text-content");
+    
+    // Initial render of rewritten text
+    this.updateRewrittenText();
+
     // --- Action Buttons ---
     const actionSetting = new Setting(contentEl)
       .addButton(btn =>
@@ -85,7 +95,7 @@ export class RewriteModal extends Modal {
     if (this.onRetry) {
       actionSetting.addButton(btn =>
         btn
-          .setButtonText("Try again with a different prompt")
+          .setButtonText("Try with new prompt")
           .onClick(() => {
             this.close();
             this.onRetry!();

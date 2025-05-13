@@ -36,80 +36,111 @@ export class TailoredPromptModal extends Modal {
     contentEl.empty();
     contentEl.addClass("coffee-tailored-prompt-modal");
 
-    contentEl.createEl("h2", { text: "Tailored rewrite" });
+    // Add a proper header
+    contentEl.createEl("h2", { text: "Tailor Your Rewrite" });
 
-    // --- Display selected text --- Start
-    const textPreviewContainer = contentEl.createDiv("text-container original-text-container text-to-rewrite-container");
-    new Setting(textPreviewContainer)
-      .setName('Text to Rewrite:')
-      .setHeading()
-      .settingEl.addClass('coffee-text-to-rewrite-label');
+    // Create main sections container
+    const mainSectionsContainer = contentEl.createDiv("tailored-prompt-sections");
 
+    // --- Text Preview Section ---
+    const textPreviewSection = mainSectionsContainer.createDiv("tailored-prompt-section text-preview-section");
+    
+    // Section header with icon
+    const textSectionHeader = textPreviewSection.createDiv("section-header");
+    textSectionHeader.createEl("h3", { text: "Text to Rewrite" });
+    
+    // Text preview with scrollable container and border
+    const textPreviewContainer = textPreviewSection.createDiv("text-container text-to-rewrite-container");
     const textPreviewContentDiv = textPreviewContainer.createDiv("modal-text-content");
     MarkdownRenderer.render(this.app, this.textToRewrite, textPreviewContentDiv, "", this as unknown as Component);
-    // --- Display selected text --- End
 
-    // 1. Create the Setting for the dropdown first
-    const dropdownSetting = new Setting(contentEl)
-      .setName("Prompt template");
-    // 2. Create the containers for preview and custom input next
-    // These will be direct children of contentEl, appearing after dropdownSetting.settingEl
-    this.promptPreviewArea = contentEl.createDiv();
+    // --- Prompt Configuration Section ---
+    const promptConfigSection = mainSectionsContainer.createDiv("tailored-prompt-section prompt-config-section");
+    
+    // Section header with icon
+    const promptSectionHeader = promptConfigSection.createDiv("section-header");
+    promptSectionHeader.createEl("h3", { text: "Customize Prompt" });
+    
+    // 1. Template selector dropdown with visual enhancement
+    const promptSelector = new Setting(promptConfigSection)
+      .setName("Choose a template")
+      .setDesc("Select from saved templates or write your own prompt");
+    
+    promptSelector.settingEl.addClass("prompt-selector-setting");
+    
+    promptSelector.addDropdown(dd => {
+      this.promptSelect = dd;
+      // Add saved prompts
+      this.plugin.cfg.promptTemplates.forEach(template => {
+        dd.addOption(template.id, template.name);
+      });
+      // Add option for custom prompt
+      dd.addOption(this.CUSTOM_PROMPT_ID, "-- Write a new custom prompt --");
+
+      // Determine initial selection
+      let initialSelectionIsCustom = true; // Assume custom if no templates
+      if (this.plugin.cfg.promptTemplates.length > 0) {
+        dd.setValue(this.plugin.cfg.promptTemplates[0].id);
+        this.chosenPromptTemplate = this.plugin.cfg.promptTemplates[0];
+        initialSelectionIsCustom = false;
+      } else {
+        dd.setValue(this.CUSTOM_PROMPT_ID);
+        // this.chosenPromptTemplate remains null
+      }
+
+      // Set initial UI state
+      this.toggleCustomPromptUI(initialSelectionIsCustom);
+      this.updatePromptPreview(dd.getValue());
+
+      // Handle changes to the dropdown
+      dd.onChange(value => {
+        const isCustom = value === this.CUSTOM_PROMPT_ID;
+        if (isCustom) {
+          this.chosenPromptTemplate = null;
+        } else {
+          this.chosenPromptTemplate = this.plugin.cfg.promptTemplates.find(t => t.id === value) || null;
+        }
+        this.toggleCustomPromptUI(isCustom);
+        this.updatePromptPreview(value);
+      });
+    });
+
+    // Template preview area for selected template
+    this.promptPreviewArea = promptConfigSection.createDiv("prompt-preview-container");
     this.promptPreviewArea.addClass("coffee-tailored-prompt-preview");
-    this.promptPreviewArea.style.display = "none"; 
+    this.promptPreviewArea.style.display = "none";
 
-    this.customPromptContainer = contentEl.createDiv("custom-prompt-container-div");
+    // Custom prompt input area
+    this.customPromptContainer = promptConfigSection.createDiv("custom-prompt-container-div");
     this.customPromptContainer.addClass("coffee-tailored-custom-prompt-container");
     this.customPromptContainer.style.display = "none";
-
-    // 3. Now add the dropdown to its Setting, and configure its behavior
-    dropdownSetting.addDropdown(dd => {
-        this.promptSelect = dd;
-        // Add saved prompts
-        this.plugin.cfg.promptTemplates.forEach(template => {
-          dd.addOption(template.id, template.name);
-        });
-        // Add option for custom prompt
-        dd.addOption(this.CUSTOM_PROMPT_ID, "-- Write a new custom prompt --");
-
-        // Determine initial selection
-        let initialSelectionIsCustom = true; // Assume custom if no templates
-        if (this.plugin.cfg.promptTemplates.length > 0) {
-          dd.setValue(this.plugin.cfg.promptTemplates[0].id);
-          this.chosenPromptTemplate = this.plugin.cfg.promptTemplates[0];
-          initialSelectionIsCustom = false;
-        } else {
-          dd.setValue(this.CUSTOM_PROMPT_ID);
-          // this.chosenPromptTemplate remains null
-        }
-
-        // Set initial UI state based on the determined selection
-        // this.promptPreviewArea and this.customPromptContainer are now defined
-        this.toggleCustomPromptUI(initialSelectionIsCustom);
-        this.updatePromptPreview(dd.getValue()); 
-
-        // Handle changes to the dropdown
-        dd.onChange(value => {
-          const isCustom = value === this.CUSTOM_PROMPT_ID;
-          if (isCustom) {
-            this.chosenPromptTemplate = null;
-          } else {
-            this.chosenPromptTemplate = this.plugin.cfg.promptTemplates.find(t => t.id === value) || null;
-          }
-          this.toggleCustomPromptUI(isCustom);
-          this.updatePromptPreview(value);
-        });
-      });
     
-    // --- Context Settings --- Start
-    new Setting(contentEl)
+    const customPromptSetting = new Setting(this.customPromptContainer)
+      .setName("Your custom prompt")
+      .setDesc("Enter instructions for how the text should be rewritten");
+    
+    customPromptSetting.addTextArea(textArea => {
+      this.promptTextArea = textArea;
+      textArea.inputEl.rows = 5;
+      textArea.setPlaceholder("Example: Summarize this text for a 5-year-old.");
+      textArea.inputEl.addClass("coffee-tailored-prompt-textarea");
+    });
+
+    // --- Context Options Section ---
+    const contextOptionsContainer = mainSectionsContainer.createDiv("tailored-prompt-section context-options-section");
+    
+    // Section header with icon
+    const contextSectionHeader = contextOptionsContainer.createDiv("section-header");
+    contextSectionHeader.createEl("h3", { text: "Context Options" });
+    
+    new Setting(contextOptionsContainer)
       .setName("Include Context")
       .setDesc("Provide surrounding text to the LLM for better understanding. (increases cost on non-free models)")
       .addToggle(toggle => toggle
         .setValue(this.contextEnabled)
         .onChange(value => {
           this.contextEnabled = value;
-          this.contextScope = this.contextEnabled ? "paragraphs" : "none"; // Default to paragraphs when enabled
+          this.contextScope = this.contextEnabled ? "paragraphs" : "none";
           this.toggleContextOptionsUI();
           // Update the scope dropdown if it exists
           if (this.contextOptionsSetting?.controlEl.querySelector('select')) {
@@ -117,39 +148,25 @@ export class TailoredPromptModal extends Modal {
           }
         }));
     
-    // Container for context scope options (initially hidden)
-    const contextOptionsContainer = contentEl.createDiv("context-options-container");
-    this.contextOptionsSetting = new Setting(contextOptionsContainer)
+    const ctxOptionsContainer = contextOptionsContainer.createDiv("context-options-container");
+    this.contextOptionsSetting = new Setting(ctxOptionsContainer)
       .setName("Context Scope")
       .addDropdown(dd => {
         dd.addOption("paragraphs", "Previous 3 Paragraphs");
         dd.addOption("full", "Full Document");
-        dd.setValue(this.contextScope) // Initial value (likely 'none' or 'paragraphs')
+        dd.setValue(this.contextScope)
           .onChange(value => {
             this.contextScope = value as ContextScope;
           });
       });
-    this.toggleContextOptionsUI(); // Set initial visibility based on contextEnabled
-    // --- Context Settings --- End
+    this.toggleContextOptionsUI();
 
-    // 4. Setup Custom Prompt Text Area (inside the customPromptContainer)
-    // This setting is appended to this.customPromptContainer, not contentEl directly here.
-    const customPromptSetting = new Setting(this.customPromptContainer)
-      .setName("Custom prompt")
-      .setDesc("Enter your custom prompt. The selected text will be appended to this.");
+    // --- Action Buttons ---
+    const actionButtonContainer = contentEl.createDiv("tailored-prompt-actions");
     
-    customPromptSetting.addTextArea(textArea => {
-        this.promptTextArea = textArea;
-        textArea.inputEl.rows = 5;
-        textArea.inputEl.cols = 50;
-        textArea.setPlaceholder("Example: Summarize this text for a 5-year-old.");
-        textArea.inputEl.addClass("coffee-tailored-prompt-textarea");
-      });
-
-    // 5. Action Button (appended to contentEl, so appears last)
-    new Setting(contentEl)
+    new Setting(actionButtonContainer)
       .addButton(button => button
-        .setButtonText("Rewrite with this prompt")
+        .setButtonText("Rewrite")
         .setCta()
         .onClick(() => {
           let finalPromptText = "";
@@ -163,8 +180,12 @@ export class TailoredPromptModal extends Modal {
           }
           this.close();
           this.handleRewrite(finalPromptText, this.contextScope);
-        })
-      );
+        }))
+      .addButton(button => button
+        .setButtonText("Cancel")
+        .onClick(() => {
+          this.close();
+        }));
   }
 
   private toggleCustomPromptUI(showCustom: boolean) {
