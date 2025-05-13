@@ -1,6 +1,7 @@
 import { requestUrl, Notice } from "obsidian";
 import { CoffeeRewriterSettings } from "../types/settings";
 import { GeminiModel, GeminiModelListResponse } from "../types/llm-api";
+import { isContextWindowError, showContextWindowError } from "../utils/error-utils";
 
 export async function callGemini(
   settings: CoffeeRewriterSettings, 
@@ -28,7 +29,14 @@ export async function callGemini(
     return res.json?.candidates?.[0]?.content?.parts?.[0]?.text;
   } catch (err) {
     console.error("Coffee Rewriter – Gemini error", err);
-    new Notice("Coffee Rewriter: Gemini request failed (see console).");
+    
+    // Check if this is a context window error
+    if (isContextWindowError(err)) {
+      showContextWindowError("Gemini");
+    } else {
+      new Notice("Coffee Rewriter: Gemini request failed (see console).");
+    }
+    
     return;
   }
 }

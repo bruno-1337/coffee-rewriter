@@ -2,6 +2,7 @@ import { requestUrl, Notice } from "obsidian";
 import { CoffeeRewriterSettings } from "../types/settings";
 import { OpenAICompatibleModel, OpenAICompatibleModelListResponse } from "../types/llm-api";
 import { stripReasoningTags } from "../utils/string-utils";
+import { isContextWindowError, showContextWindowError } from "../utils/error-utils";
 
 export async function callLmStudio(
   settings: CoffeeRewriterSettings, 
@@ -29,7 +30,14 @@ export async function callLmStudio(
     return stripReasoningSetting ? stripReasoningTags(content) : content;
   } catch (err) {
     console.error("Coffee Rewriter – LM Studio error", err);
-    new Notice("Coffee Rewriter: Could not reach LM Studio server.");
+    
+    // Check if this is a context window error
+    if (isContextWindowError(err)) {
+      showContextWindowError("LM Studio");
+    } else {
+      new Notice("Coffee Rewriter: Could not reach LM Studio server.");
+    }
+    
     return;
   }
 }

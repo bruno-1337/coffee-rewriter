@@ -1,6 +1,7 @@
 import { requestUrl, Notice } from "obsidian";
 import { CoffeeRewriterSettings } from "../types/settings";
 import { OpenAICompatibleModel, OpenAICompatibleModelListResponse } from "../types/llm-api";
+import { isContextWindowError, showContextWindowError } from "../utils/error-utils";
 
 export async function callOpenAI(
   settings: CoffeeRewriterSettings, 
@@ -32,7 +33,14 @@ export async function callOpenAI(
     return res.json?.choices?.[0]?.message?.content;
   } catch (err) {
     console.error("Coffee Rewriter – OpenAI error", err);
-    new Notice("Coffee Rewriter: OpenAI request failed (see console).");
+    
+    // Check if this is a context window error
+    if (isContextWindowError(err)) {
+      showContextWindowError("OpenAI");
+    } else {
+      new Notice("Coffee Rewriter: OpenAI request failed (see console).");
+    }
+    
     return;
   }
 }

@@ -1,6 +1,7 @@
 import { requestUrl, Notice } from "obsidian";
 import { CoffeeRewriterSettings } from "../types/settings";
 import { ClaudeModel, ClaudeModelListResponse } from "../types/llm-api";
+import { isContextWindowError, showContextWindowError } from "../utils/error-utils";
 
 /**
  * Send a chat completion request to Anthropic Claude.
@@ -43,7 +44,14 @@ export async function callClaude(
     return undefined;
   } catch (err) {
     console.error("Coffee Rewriter – Claude error", err);
-    new Notice("Coffee Rewriter: Claude request failed (see console).");
+    
+    // Check if this is a context window error
+    if (isContextWindowError(err)) {
+      showContextWindowError("Claude");
+    } else {
+      new Notice("Coffee Rewriter: Claude request failed (see console).");
+    }
+    
     return;
   }
 }
