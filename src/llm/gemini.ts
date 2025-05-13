@@ -8,7 +8,7 @@ export async function callGemini(
   text: string, 
   promptToUse: string
 ): Promise<string | undefined> {
-  const { geminiKey, geminiModel } = settings;
+  const { geminiKey, geminiModel, geminiTemperature } = settings;
 
   if (!geminiKey) {
     new Notice("Coffee Rewriter: Gemini API key missing.");
@@ -23,6 +23,9 @@ export async function callGemini(
       contentType: "application/json",
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: `${promptToUse}\n\n${text}` }] }],
+        generationConfig: {
+          temperature: geminiTemperature
+        }
       }),
     });
 

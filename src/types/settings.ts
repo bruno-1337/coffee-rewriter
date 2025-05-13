@@ -6,19 +6,33 @@ export interface PromptTemplate {
 
 export interface CoffeeRewriterSettings {
   provider: LlmProvider;
+  
+  // OpenAI settings
   openAiKey: string;
   openAiModel: string;
+  openAiTemperature: number;
+  
+  // Gemini settings
   geminiKey: string;
   geminiModel: string;
+  geminiTemperature: number;
+  
+  // LM Studio settings
   lmstudioEndpoint: string;
   lmStudioModel: string;
-  /** Anthropic/Claude */
+  lmStudioTemperature: number;
+  
+  // Claude settings
   claudeKey: string;
   claudeModel: string;
-  /** Ollama local server */
+  claudeTemperature: number;
+  
+  // Ollama settings
   ollamaEndpoint: string;
   ollamaModel: string;
-  // prompt: string; // This will be replaced by promptTemplates
+  ollamaTemperature: number;
+  
+  // Common settings
   promptTemplates: PromptTemplate[];
   preserveQuotes: boolean;
   /** Only applicable to self-hosted providers (LM Studio, Ollama) */

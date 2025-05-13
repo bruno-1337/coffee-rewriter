@@ -8,7 +8,7 @@ export async function callOpenAI(
   text: string, 
   promptToUse: string
 ): Promise<string | undefined> {
-  const { openAiKey, openAiModel } = settings;
+  const { openAiKey, openAiModel, openAiTemperature } = settings;
 
   if (!openAiKey) {
     new Notice("Coffee Rewriter: OpenAI key missing. Add it in the settings.");
@@ -27,6 +27,7 @@ export async function callOpenAI(
           { role: "system", content: promptToUse },
           { role: "user", content: text },
         ],
+        temperature: openAiTemperature
       }),
     });
 

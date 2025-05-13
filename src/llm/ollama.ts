@@ -12,7 +12,7 @@ export async function callOllama(
   text: string, 
   promptToUse: string
 ): Promise<string | undefined> {
-  const { ollamaEndpoint, ollamaModel, stripReasoning } = settings;
+  const { ollamaEndpoint, ollamaModel, ollamaTemperature, stripReasoning } = settings;
 
   try {
     const res = await requestUrl({
@@ -25,6 +25,7 @@ export async function callOllama(
           { role: "system", content: promptToUse },
           { role: "user", content: text },
         ],
+        temperature: ollamaTemperature
       }),
     });
 

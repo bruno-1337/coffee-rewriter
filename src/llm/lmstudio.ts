@@ -9,7 +9,7 @@ export async function callLmStudio(
   text: string, 
   promptToUse: string
 ): Promise<string | undefined> {
-  const { lmstudioEndpoint, lmStudioModel, stripReasoning: stripReasoningSetting } = settings;
+  const { lmstudioEndpoint, lmStudioModel, lmStudioTemperature, stripReasoning: stripReasoningSetting } = settings;
 
   try {
     const res = await requestUrl({
@@ -22,6 +22,7 @@ export async function callLmStudio(
           { role: "system", content: promptToUse },
           { role: "user", content: text },
         ],
+        temperature: lmStudioTemperature
       }),
     });
 

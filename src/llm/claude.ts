@@ -11,7 +11,7 @@ export async function callClaude(
   text: string, 
   promptToUse: string
 ): Promise<string | undefined> {
-  const { claudeKey, claudeModel } = settings;
+  const { claudeKey, claudeModel, claudeTemperature } = settings;
 
   if (!claudeKey) {
     new Notice("Coffee Rewriter: Claude API key missing. Add it in the settings.");
@@ -34,6 +34,7 @@ export async function callClaude(
         messages: [
           { role: "user", content: text },
         ],
+        temperature: claudeTemperature
       }),
     });
 

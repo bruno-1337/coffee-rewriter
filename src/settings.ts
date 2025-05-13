@@ -10,12 +10,32 @@ import { PromptEditModal, PromptSaveAction } from "./PromptEditModal";
 
 export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
   provider: "openai",
+  
+  // OpenAI settings
   openAiKey: "",
   openAiModel: "gpt-3.5-turbo",
+  openAiTemperature: 0.7,
+  
+  // Gemini settings
   geminiKey: "",
   geminiModel: "gemini-pro",
+  geminiTemperature: 0.7,
+  
+  // LM Studio settings
   lmstudioEndpoint: "http://localhost:1234",
   lmStudioModel: "",
+  lmStudioTemperature: 0.7,
+  
+  // Claude settings
+  claudeKey: "",
+  claudeModel: "claude-3-haiku-20240307",
+  claudeTemperature: 0.7,
+  
+  // Ollama settings
+  ollamaEndpoint: "http://localhost:11434",
+  ollamaModel: "",
+  ollamaTemperature: 0.7,
+  
   promptTemplates: [
     {
       id: "default-quick-rewrite",
@@ -40,10 +60,6 @@ export const DEFAULT_SETTINGS: CoffeeRewriterSettings = {
   ],
   preserveQuotes: false,
   stripReasoning: false,
-  claudeKey: "",
-  claudeModel: "claude-3-haiku-20240307",
-  ollamaEndpoint: "http://localhost:11434",
-  ollamaModel: "",
 };
 
 export class CoffeeRewriterSettingTab extends PluginSettingTab {
@@ -212,6 +228,26 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     });
   }
 
+  private addTemperatureSetting(
+    parent: HTMLElement,
+    get: () => number,
+    set: (v: number) => void
+  ): void {
+    new Setting(parent)
+      .setName("Temperature")
+      .setDesc("Controls randomness. Lower values are more focused, higher values more creative (0.0-1.0).")
+      .addSlider(slider => {
+        slider
+          .setLimits(0, 1, 0.1)
+          .setValue(get())
+          .setDynamicTooltip()
+          .onChange(async (val) => {
+            set(val);
+            await this.plugin.saveSettings();
+          });
+      });
+  }
+
   private renderPromptTemplateEditor() {
     this.promptTemplateSettingsContainer.empty();
 
@@ -358,18 +394,23 @@ export class CoffeeRewriterSettingTab extends PluginSettingTab {
     if (p === "openai") {
       this.addTextSetting(containerEl, "API key", "Your OpenAI secret key.", () => this.plugin.cfg.openAiKey, (v) => (this.plugin.cfg.openAiKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "OpenAI model.", "openai", () => this.plugin.cfg.openAiModel, (v) => (this.plugin.cfg.openAiModel = v));
+      this.addTemperatureSetting(containerEl, () => this.plugin.cfg.openAiTemperature, (v) => (this.plugin.cfg.openAiTemperature = v));
     } else if (p === "gemini") {
       this.addTextSetting(containerEl, "API key", "Google AI API key.", () => this.plugin.cfg.geminiKey, (v) => (this.plugin.cfg.geminiKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "Gemini model.", "gemini", () => this.plugin.cfg.geminiModel, (v) => (this.plugin.cfg.geminiModel = v));
+      this.addTemperatureSetting(containerEl, () => this.plugin.cfg.geminiTemperature, (v) => (this.plugin.cfg.geminiTemperature = v));
     } else if (p === "lmstudio") {
       this.addTextSetting(containerEl, "Server URL", "LM Studio endpoint (http://host:port)", () => this.plugin.cfg.lmstudioEndpoint, (v) => (this.plugin.cfg.lmstudioEndpoint = v));
       this.addModelDropdownSetting(containerEl, "Model", "LM Studio model (requires server to be running).", "lmstudio", () => this.plugin.cfg.lmStudioModel, (v) => (this.plugin.cfg.lmStudioModel = v));
+      this.addTemperatureSetting(containerEl, () => this.plugin.cfg.lmStudioTemperature, (v) => (this.plugin.cfg.lmStudioTemperature = v));
     } else if (p === "claude") {
       this.addTextSetting(containerEl, "API key", "Your Anthropic Claude API key.", () => this.plugin.cfg.claudeKey, (v) => (this.plugin.cfg.claudeKey = v), true);
       this.addModelDropdownSetting(containerEl, "Model", "Claude model.", "claude", () => this.plugin.cfg.claudeModel, (v) => (this.plugin.cfg.claudeModel = v));
+      this.addTemperatureSetting(containerEl, () => this.plugin.cfg.claudeTemperature, (v) => (this.plugin.cfg.claudeTemperature = v));
     } else if (p === "ollama") {
       this.addTextSetting(containerEl, "Server URL", "Ollama endpoint (http://host:port)", () => this.plugin.cfg.ollamaEndpoint, (v) => (this.plugin.cfg.ollamaEndpoint = v));
       this.addModelDropdownSetting(containerEl, "Model", "Ollama model (requires server to be running).", "ollama", () => this.plugin.cfg.ollamaModel, (v) => (this.plugin.cfg.ollamaModel = v));
+      this.addTemperatureSetting(containerEl, () => this.plugin.cfg.ollamaTemperature, (v) => (this.plugin.cfg.ollamaTemperature = v));
     }
 
     new Setting(containerEl).setName("Prompts").setHeading();
