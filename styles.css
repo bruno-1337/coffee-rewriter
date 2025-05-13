@@ -66,30 +66,20 @@
 }
 
 /* === Diff Highlighting === */
-/* Highlight style for additions */
+/* Highlight style for additions/changes */
 .coffee-rewrite-modal .modal-text-content mark {
-  background-color: #ffe438 !important;
-  color: #000 !important;
+  background-color: #ebdf3e !important; /* Bright yellow */
+  color: #000000 !important; /* Black text for contrast */
   text-shadow: none !important;
   padding: 0 2px;
   border-radius: 2px;
   margin: 0;
+  mix-blend-mode: normal; /* Ensure proper blending */
 }
 
+/* Keep hover consistent */
 .coffee-rewrite-modal .modal-text-content mark:hover {
-  background-color: rgba(255, 230, 92, 0.6);
-}
-
-/* Dark/Light Mode Specific Adjustments for highlights */
-.theme-dark .coffee-rewrite-modal .modal-text-content mark {
-  background-color: rgba(171, 155, 20, 0.35);
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-}
-
-.theme-light .coffee-rewrite-modal .modal-text-content mark {
-  background-color: rgba(255, 230, 92, 0.5);
-  color: #000;
+  background-color: #ebdf3e !important; /* Same bright yellow */
 }
 
 /* === Diff Toggle Setting === */
@@ -384,15 +374,6 @@
   }
 }
 
-/* === Dark/Light Mode Specific Adjustments === */
-.theme-dark .coffee-rewrite-modal .modal-text-content mark {
-  background-color: rgba(255, 230, 92, 0.3);
-}
-
-.theme-light .coffee-rewrite-modal .modal-text-content mark {
-  background-color: rgba(255, 230, 92, 0.5);
-}
-
 /* === Two-Column Layout for RewriteModal === */
 .coffee-rewrite-modal .two-column-grid {
   display: flex;
@@ -410,27 +391,6 @@
 /* Reset spacing between containers */
 .coffee-rewrite-modal .two-column-grid .text-container {
   margin-bottom: 0;
-}
-
-/* Fix highlight color to be consistent bright yellow */
-.coffee-rewrite-modal .modal-text-content mark,
-.theme-dark .coffee-rewrite-modal .modal-text-content mark,
-.theme-light .coffee-rewrite-modal .modal-text-content mark {
-  background-color: rgba(255, 230, 0, 0.5) !important;
-  color: inherit !important;
-  text-shadow: none !important;
-}
-
-/* Fix highlight color on hover */
-.coffee-rewrite-modal .modal-text-content mark:hover,
-.theme-dark .coffee-rewrite-modal .modal-text-content mark:hover,
-.theme-light .coffee-rewrite-modal .modal-text-content mark:hover {
-  background-color: rgba(255, 230, 0, 0.7) !important;
-}
-
-/* Fix overlap issue by using proper blending */
-.coffee-rewrite-modal .modal-text-content {
-  mix-blend-mode: normal;
 }
 
 /* === Enhanced TailoredPromptModal === */
