@@ -4,6 +4,9 @@ import { requestRewrite } from "./llm/index";
 import { RewriteModal } from "./rewrite-modal";
 import { PromptTemplate } from "./types/settings";
 import { ChooseTextModal } from "./choose-text-modal";
+import { getPrecedingParagraphs } from "./utils/editor-utils";
+
+type ContextScope = "none" | "full" | "paragraphs";
 
 export class TailoredPromptModal extends Modal {
   private selectedText: string;
@@ -16,6 +19,9 @@ export class TailoredPromptModal extends Modal {
   private readonly CUSTOM_PROMPT_ID = "__custom__";
   private promptPreviewArea!: HTMLDivElement;
   private textToRewrite: string;
+  private contextEnabled: boolean = false;
+  private contextScope: ContextScope = "none";
+  private contextOptionsSetting: Setting | null = null;
 
   constructor(app: App, selectedText: string, plugin: CoffeeRewriter, editor: Editor) {
     super(app);
@@ -95,6 +101,37 @@ export class TailoredPromptModal extends Modal {
         });
       });
     
+    // --- Context Settings --- Start
+    new Setting(contentEl)
+      .setName("Include Context")
+      .setDesc("Provide surrounding text to the LLM for better understanding.")
+      .addToggle(toggle => toggle
+        .setValue(this.contextEnabled)
+        .onChange(value => {
+          this.contextEnabled = value;
+          this.contextScope = this.contextEnabled ? "paragraphs" : "none"; // Default to paragraphs when enabled
+          this.toggleContextOptionsUI();
+          // Update the scope dropdown if it exists
+          if (this.contextOptionsSetting?.controlEl.querySelector('select')) {
+              (this.contextOptionsSetting.controlEl.querySelector('select') as HTMLSelectElement).value = this.contextScope;
+          }
+        }));
+    
+    // Container for context scope options (initially hidden)
+    const contextOptionsContainer = contentEl.createDiv("context-options-container");
+    this.contextOptionsSetting = new Setting(contextOptionsContainer)
+      .setName("Context Scope")
+      .addDropdown(dd => {
+        dd.addOption("paragraphs", "Previous 3 Paragraphs");
+        dd.addOption("full", "Full Document");
+        dd.setValue(this.contextScope) // Initial value (likely 'none' or 'paragraphs')
+          .onChange(value => {
+            this.contextScope = value as ContextScope;
+          });
+      });
+    this.toggleContextOptionsUI(); // Set initial visibility based on contextEnabled
+    // --- Context Settings --- End
+
     // 4. Setup Custom Prompt Text Area (inside the customPromptContainer)
     // This setting is appended to this.customPromptContainer, not contentEl directly here.
     const customPromptSetting = new Setting(this.customPromptContainer)
@@ -125,7 +162,7 @@ export class TailoredPromptModal extends Modal {
             return;
           }
           this.close();
-          this.handleRewrite(finalPromptText);
+          this.handleRewrite(finalPromptText, this.contextScope);
         })
       );
   }
@@ -141,6 +178,22 @@ export class TailoredPromptModal extends Modal {
             this.promptPreviewArea.style.display = "block"; 
         }
     }
+  }
+
+  private toggleContextOptionsUI() {
+      if (this.contextOptionsSetting) {
+          if (this.contextEnabled) {
+              this.contextOptionsSetting.settingEl.style.display = ''; // Show
+              // Ensure the dropdown reflects the current scope if just enabled
+              if (this.contextScope === 'none') this.contextScope = 'paragraphs'; // Default
+              if (this.contextOptionsSetting?.controlEl.querySelector('select')) {
+                   (this.contextOptionsSetting.controlEl.querySelector('select') as HTMLSelectElement).value = this.contextScope;
+              }
+          } else {
+              this.contextOptionsSetting.settingEl.style.display = 'none'; // Hide
+              this.contextScope = 'none'; // Reset scope when context is disabled
+          }
+      }
   }
 
   private updatePromptPreview(selectedId: string | null) {
@@ -159,10 +212,40 @@ export class TailoredPromptModal extends Modal {
     }
   }
 
-  private async handleRewrite(promptToUse: string) {
+  private async handleRewrite(promptToUse: string, contextScope: ContextScope) {
     new Notice("☕️ Calling LLM with tailored prompt...");
 
-    const response = await requestRewrite(this.plugin.cfg, this.selectedText, promptToUse);
+    let textToSend = this.selectedText;
+    let contextPrefix = ""; // Initialize context prefix
+
+    // --- Context Retrieval Logic ---
+    if (contextScope === "full") {
+      const fullDocText = this.editor.getValue();
+      // Avoid including the selected text itself in the context if it's the whole doc
+      // This simple check might not be robust for complex selections
+      if (fullDocText !== this.selectedText) { 
+        contextPrefix = `Context from the document:\n\`\`\`\n${fullDocText}\n\`\`\`\n\n---\n\n`;
+      }
+    } else if (contextScope === "paragraphs") {
+      const precedingParagraphs = getPrecedingParagraphs(this.editor, 3);
+      if (precedingParagraphs) {
+          contextPrefix = `Context from preceding paragraphs:\n\`\`\`\n${precedingParagraphs}\n\`\`\`\n\n---\n\n`;
+      }
+    }
+    // --- End Context Retrieval ---
+
+    // Prepend context to the text if context was retrieved
+    if (contextPrefix) {
+      textToSend = `${contextPrefix}Based on the context above, rewrite the following text:\n\`\`\`\n${this.selectedText}\n\`\`\``;
+      // Also, add context indication to the prompt instruction itself
+      promptToUse = `${promptToUse}. Use the provided context for accuracy and relevance.`;
+    } else {
+      // If no context, use the original structure
+      textToSend = this.selectedText; 
+    }
+
+    // Pass the potentially context-enhanced text to the LLM
+    const response = await requestRewrite(this.plugin.cfg, textToSend, promptToUse);
 
     if (!response) {
       new Notice("Coffee Rewriter: Tailored rewrite request failed or returned empty.");
@@ -179,7 +262,7 @@ export class TailoredPromptModal extends Modal {
     }
     
     // Capture the text that was actually the input for *this* rewrite cycle
-    const textActuallyRewritten = this.textToRewrite;
+    const textActuallyRewritten = this.selectedText;
     
     const onAcceptAll = (acceptedText: string) => {
         // Check if there's a selection to replace
